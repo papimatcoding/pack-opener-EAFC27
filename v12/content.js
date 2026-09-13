@@ -69,20 +69,34 @@ D.PLAYERS.forEach(p=>{if(!p.special)Object.assign(p,quality(p));p.target=p.targe
 D.TOTW=D.PLAYERS.filter(p=>p.special);
 D.LEAGUES=[...new Set(D.PLAYERS.map(p=>p.league))].sort();
 
-// Free progression should actually feed Bronze SBCs. Keep it unlimited, but bronze-heavy.
 const basic=D.PACKS_V4.find(p=>p.id==='basic');
 if(basic){basic.count=6;basic.min=58;basic.max=74;basic.subtitle='Gratis siempre · 6 jugadores · mayoría bronce para SBC y colección';basic.oddsText='≈ 82% bronce · 18% plata';}
 const oldMakePack=PV.makePack;
+function weighted(pool){if(!pool.length)return null;const ws=pool.map(p=>Math.pow(Math.max(1,78-p.ovr),1.35)),sum=ws.reduce((a,b)=>a+b,0);let r=Math.random()*sum;for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i]}return pool[pool.length-1]}
+function ensureUnique(pack,out){
+  if(pack.specialOnly||out.length<2)return out;
+  const result=[],used=new Set();
+  for(const first of out){
+    let p=first;
+    if(used.has(p.id)){
+      for(let tries=0;tries<12&&used.has(p.id);tries++){
+        const fresh=oldMakePack(pack)||[];p=fresh.find(x=>!used.has(x.id))||p;
+      }
+      if(used.has(p.id)){
+        const pool=D.PLAYERS.filter(x=>!x.special&&x.ovr>=pack.min&&x.ovr<=pack.max&&!used.has(x.id));
+        p=pool[Math.floor(Math.random()*pool.length)]||p;
+      }
+    }
+    if(!used.has(p.id)){result.push(p);used.add(p.id)}
+  }
+  // A reward pack must keep its advertised item count whenever the data pool makes that possible.
+  while(result.length<pack.count){const pool=D.PLAYERS.filter(x=>!x.special&&x.ovr>=pack.min&&x.ovr<=pack.max&&!used.has(x.id));if(!pool.length)break;const p=pool[Math.floor(Math.random()*pool.length)];result.push(p);used.add(p.id)}
+  return result.sort((a,b)=>b.ovr-a.ovr||b.price-a.price);
+}
 PV.makePack=pack=>{
-  if(pack?.id!=='basic')return oldMakePack(pack);
+  if(pack?.id!=='basic')return ensureUnique(pack,oldMakePack(pack));
   const bronze=D.PLAYERS.filter(p=>!p.special&&p.tier==='bronze'&&p.ovr>=pack.min&&p.ovr<=pack.max);
-  const silver=D.PLAYERS.filter(p=>!p.special&&p.tier==='silver'&&p.ovr<=pack.max);
-  const out=[];
-  const weighted=pool=>{
-    if(!pool.length)return null;
-    const ws=pool.map(p=>Math.pow(Math.max(1,78-p.ovr),1.35)),sum=ws.reduce((a,b)=>a+b,0);let r=Math.random()*sum;
-    for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i]}return pool[pool.length-1];
-  };
+  const silver=D.PLAYERS.filter(p=>!p.special&&p.tier==='silver'&&p.ovr<=pack.max),out=[];
   for(let i=0;i<pack.count;i++){
     const wantBronze=Math.random()<.82;let pool=(wantBronze?bronze:silver).filter(p=>!out.some(x=>x.id===p.id));
     if(!pool.length)pool=[...bronze,...silver].filter(p=>!out.some(x=>x.id===p.id));
