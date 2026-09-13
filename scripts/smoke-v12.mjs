@@ -69,6 +69,6 @@ console.log('— Asset / visual smoke');
 const asset=fs.readFileSync('v12/assets.js','utf8'),css=fs.readFileSync('v12/styles.css','utf8'),game=fs.readFileSync('v12/game.js','utf8');
 assert(asset.includes('exactName(x.strPlayer,p)&&exactClub(x.strTeam,p.club)'),'photo matching is not strict name + current club');assert(asset.includes('strCutout')&&!asset.includes('strThumb'),'inconsistent thumbnail art fallback reintroduced');assert(asset.includes('transientError')&&asset.includes('1900'),'photo loader no longer protects against rate limits');
 assert(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))')&&css.includes('grid-template-rows:repeat(3,1fr)'),'card stats are not FUT-like 2×3');assert(css.includes('object-position:center 12%'),'player portraits are not normalized to one crop');assert(css.includes('.pv12-draft-slot .pv8-field-card'),'Draft pitch is not using the real card skin');
-assert(game.includes('Date.now()-started>2800')&&game.includes('await wait(1500)'),'walkout became skippable/fast again');assert(game.includes("mode:'special'")&&game.includes("mode:'84'"),'Club special/84 quick filters missing');
+assert(game.includes('Date.now()-started>2800')&&game.includes('await wait(1500)'),'walkout became skippable/fast again');assert(game.includes('data-club12-mode')&&game.includes('pv12-filter-chips'),'Club special/84 quick-filter UI hooks missing');
 
 console.log(`PackVerse v0.12 AI smoke OK · ${D.PLAYERS.length} cards · ${bronze.length} bronzes · basic bronze ${(bronzeRate*100).toFixed(1)}% · ${D.TOTW.length} specials`);
