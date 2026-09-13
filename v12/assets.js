@@ -37,7 +37,7 @@ const CLUB_ALIASES={
   'Galatasaray':['Galatasaray'],
   'CE Sabadell FC':['CE Sabadell','Sabadell']
 };
-const EXTRA_FLAGS={'Kenia':'ke','Líbano':'lb','Líbano':'lb'};
+const EXTRA_FLAGS={'Kenia':'ke','Líbano':'lb'};
 const baseFlag=PV.flag;
 PV.flag=n=>{
   const code=EXTRA_FLAGS[n];
@@ -67,25 +67,31 @@ PV.photoFor=async p=>{
   if(PV.state.photoMissesV12[p.id])return null;
   if(inflight.has(p.id))return inflight.get(p.id);
   const job=(async()=>{
+    let transientError=false,completedQueries=0;
     for(const q of namesFor(p)){
       try{
-        const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=${encodeURIComponent(q)}`),j=await r.json(),arr=j?.player||[];
+        const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=${encodeURIComponent(q)}`);
+        if(!r.ok){transientError=true;continue}
+        completedQueries++;
+        const j=await r.json(),arr=j?.player||[];
         const hit=arr.find(x=>String(x.strSport||'Soccer').toLowerCase()==='soccer'&&exactName(x.strPlayer,p)&&exactClub(x.strTeam,p.club));
-        // Only transparent/cutout artwork is accepted. Thumbnails are too inconsistent for card art.
+        // Only transparent/cutout artwork is accepted. Generic thumbs create inconsistent crops and old-shirt errors.
         const url=hit?.strCutout||null;
-        if(url){PV.state.photos[p.id]=url;PV.save?.();return url}
-      }catch{}
+        if(url){PV.state.photos[p.id]=url;delete PV.state.photoMissesV12[p.id];PV.save?.();return url}
+      }catch{transientError=true}
     }
-    PV.state.photoMissesV12[p.id]=1;PV.save?.();return null;
+    // Cache a miss only after real successful API responses. Network/rate-limit failures are retried later.
+    if(completedQueries>0&&!transientError){PV.state.photoMissesV12[p.id]=1;PV.save?.()}
+    return null;
   })().finally(()=>inflight.delete(p.id));
   inflight.set(p.id,job);return job;
 };
 
 const pending=new Set();let queue=Promise.resolve();
 function paintPhoto(id,url){if(!url)return;document.querySelectorAll(`[data-photo="${CSS.escape(id)}"]`).forEach(n=>{n.innerHTML=`<img class="pv12-player-art" src="${esc(url)}" alt="" loading="lazy" decoding="async">`})}
-function enqueue(id){if(pending.has(id))return;const p=PV.byId(id);if(!p)return;pending.add(id);queue=queue.then(async()=>{const url=await PV.photoFor(p);if(url)paintPhoto(id,url);pending.delete(id);await new Promise(r=>setTimeout(r,220))})}
+function enqueue(id){if(pending.has(id))return;const p=PV.byId(id);if(!p)return;pending.add(id);queue=queue.then(async()=>{const url=await PV.photoFor(p);if(url)paintPhoto(id,url);pending.delete(id);/* stay under public API burst limits */await new Promise(r=>setTimeout(r,1900))})}
 let observer=null;
-function photoObserver(){if(observer||typeof IntersectionObserver==='undefined')return observer;observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;const id=e.target.dataset.photo;if(id)enqueue(id);observer.unobserve(e.target)})},{rootMargin:'220px 0px'});return observer}
+function photoObserver(){if(observer||typeof IntersectionObserver==='undefined')return observer;observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;const id=e.target.dataset.photo;if(id)enqueue(id);observer.unobserve(e.target)})},{rootMargin:'240px 0px'});return observer}
 
 PV.hydrate=root=>{
   const scope=root||document;
@@ -93,7 +99,7 @@ PV.hydrate=root=>{
   clubs.slice(0,50).forEach(async club=>{const url=await PV.clubLogoFor?.(club);if(!url)return;document.querySelectorAll(`[data-club-badge="${CSS.escape(club)}"]`).forEach(n=>n.innerHTML=`<img src="${esc(url)}" alt="${esc(club)}" loading="lazy" decoding="async">`)});
   const leagues=[...new Set([...scope.querySelectorAll('[data-league-badge]')].map(n=>n.dataset.leagueBadge).filter(Boolean))];
   leagues.slice(0,30).forEach(async league=>{const url=await PV.leagueLogoFor?.(league);if(!url)return;document.querySelectorAll(`[data-league-badge="${CSS.escape(league)}"]`).forEach(n=>n.innerHTML=`<img src="${esc(url)}" alt="${esc(league)}" loading="lazy" decoding="async">`)});
-  const obs=photoObserver();let fallbackBudget=12;
+  const obs=photoObserver();let fallbackBudget=8;
   [...scope.querySelectorAll('[data-photo]')].forEach(n=>{
     const id=n.dataset.photo,p=PV.byId(id);if(!p)return;
     const cached=PV.state.photos[id]||OFFICIAL[norm(p.name)];
@@ -102,5 +108,5 @@ PV.hydrate=root=>{
   });
 };
 
-window.PV12_ASSET_AUDIT={policy:'official-first + exact-name/current-club cutout only',officialCount:Object.keys(OFFICIAL).length};
+window.PV12_ASSET_AUDIT={policy:'official-first + exact-name/current-club cutout only',officialCount:Object.keys(OFFICIAL).length,remoteThrottleMs:1900};
 })();
