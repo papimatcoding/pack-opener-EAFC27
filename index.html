@@ -1,181 +1,42 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-  <meta name="theme-color" content="#07100b" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="PackVerse 27 — pack opener, club, squad builder, draft, SBC y market lab para FC 27." />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#08110d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="PackVerse 27 — pack opener, química, club, draft y SBC para FC 27.">
   <title>PackVerse 27</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icon.svg" />
-  <link rel="apple-touch-icon" href="assets/icon.svg" />
-  <link rel="stylesheet" href="css/app.css" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.svg">
+  <link rel="stylesheet" href="v4/base.css">
+  <link rel="stylesheet" href="v4/cards.css">
+  <link rel="stylesheet" href="v4/app.css">
 </head>
 <body>
-  <div id="app" class="app-shell">
-    <header class="topbar">
-      <button class="brand-wrap bare-btn" data-nav="home" aria-label="Inicio">
-        <div class="brand-mark">PV</div>
-        <div class="brand-copy">
-          <div class="brand-title">PACKVERSE <span>27</span></div>
-          <div class="brand-sub" id="screenSubtitle">Inicio</div>
-        </div>
-      </button>
-      <div class="top-actions">
-        <div class="level-pill"><span>LV</span><b id="levelLabel">1</b></div>
-        <div class="wallet" aria-label="Saldo"><span class="coin-dot"></span><strong id="coinsLabel">125.000</strong></div>
-      </div>
-    </header>
-
-    <main id="screenHost" class="screen-host">
-      <section class="screen active" data-screen="home" aria-label="Inicio">
-        <div class="scroll-content home-scroll">
-          <div class="hero-card">
-            <div class="hero-copy">
-              <span class="eyebrow">TEMPORADA CERO · LAB</span>
-              <h1>Aprende el mercado antes de que empiece FUT.</h1>
-              <p>Packs, colección, Draft, SBC y squad builder en una app pensada para móvil.</p>
-              <div class="hero-actions">
-                <button class="primary-btn" data-nav="packs">ABRIR PACK</button>
-                <button class="ghost-btn" data-nav="squad">MI XI</button>
-              </div>
-            </div>
-            <button class="hero-orb bare-btn" id="bestPullOrb" data-nav="club" aria-label="Mejor pull">
-              <div class="hero-rating" id="heroBestRating">—</div>
-              <div class="hero-caption">BEST PULL</div>
-            </button>
-          </div>
-
-          <div class="xp-card">
-            <div class="xp-copy"><span id="xpLevelText">Nivel 1</span><small id="xpText">0 / 1.000 XP</small></div>
-            <div class="progress thick"><i id="xpBar" style="width:0%"></i></div>
-          </div>
-
-          <div class="stat-grid">
-            <article class="stat-tile"><span>Packs</span><strong id="homePacks">0</strong></article>
-            <article class="stat-tile"><span>Club</span><strong id="homeCards">0</strong></article>
-            <article class="stat-tile"><span>Valor</span><strong id="homeValue">0</strong></article>
-          </div>
-
-          <div class="section-head"><div><span class="eyebrow">JUEGA</span><h2>Modos</h2></div></div>
-          <div class="quick-grid">
-            <button class="quick-card green" data-nav="packs"><span class="quick-icon">✦</span><div><strong>Pack Store</strong><small>Abre y colecciona</small></div></button>
-            <button class="quick-card violet" data-nav="draft"><span class="quick-icon">◈</span><div><strong>Draft</strong><small>5 opciones por posición</small></div></button>
-            <button class="quick-card amber" data-nav="sbc"><span class="quick-icon">⬡</span><div><strong>SBC Lab</strong><small>Entrega cartas, gana packs</small></div></button>
-            <button class="quick-card blue" data-nav="academy"><span class="quick-icon">?</span><div><strong>Academy</strong><small>Memoriza ratings y stats</small></div></button>
-          </div>
-
-          <div class="section-head"><div><span class="eyebrow">OBJETIVOS</span><h2>Progreso</h2></div><button class="mini-chip" id="claimAllBtn">COBRAR</button></div>
-          <div class="objective-list" id="objectiveList"></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="packs" aria-label="Packs">
-        <div class="scroll-content packs-scroll">
-          <div class="section-head sticky-title"><div><span class="eyebrow">PACK STORE</span><h2>Elige un sobre</h2></div><button class="mini-chip" id="oddsInfoBtn">ODDS</button></div>
-          <div id="packTokensBar" class="token-bar"></div>
-          <div id="packShelf" class="pack-shelf"></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="club" aria-label="Club">
-        <div class="club-layout">
-          <div class="club-toolbar">
-            <div class="search-wrap"><span>⌕</span><input id="clubSearch" type="search" placeholder="Buscar jugador" autocomplete="off" /></div>
-            <button class="filter-btn" id="clubFilterBtn">FILTRAR</button>
-          </div>
-          <div class="club-summary"><span><strong id="clubUnique">0</strong> cartas</span><span><strong id="clubDupes">0</strong> duplicados</span><span><strong id="clubRatingAvg">—</strong> GRL med.</span></div>
-          <div id="clubGrid" class="club-grid"></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="squad" aria-label="Plantilla">
-        <div class="squad-layout">
-          <div class="squad-head">
-            <div><span class="eyebrow">4-3-3</span><h2>Mi XI</h2></div>
-            <div class="squad-metrics"><div class="chem-chip"><span id="squadRating">0</span><small>GRL</small></div><div class="chem-chip"><span id="squadMeta">0</span><small>META</small></div></div>
-          </div>
-          <div class="pitch" id="pitch"></div>
-          <div class="squad-footer"><button class="ghost-btn small" id="clearSquadBtn">VACIAR</button><button class="primary-btn small" id="autoSquadBtn">AUTO XI</button></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="hub" aria-label="Más">
-        <div class="scroll-content hub-scroll">
-          <div class="section-head"><div><span class="eyebrow">PACKVERSE LAB</span><h2>Más modos</h2></div></div>
-          <div class="hub-grid">
-            <button class="hub-card violet" data-nav="draft"><span>◈</span><div><strong>Draft</strong><small>Construye un XI sin usar tu club.</small></div><b>›</b></button>
-            <button class="hub-card amber" data-nav="sbc"><span>⬡</span><div><strong>SBC Lab</strong><small>Intercambia cartas por recompensas.</small></div><b>›</b></button>
-            <button class="hub-card gold" data-nav="market"><span>↗</span><div><strong>Market Lab</strong><small>Precios objetivo y watchlist.</small></div><b>›</b></button>
-            <button class="hub-card blue" data-nav="academy"><span>?</span><div><strong>Academy</strong><small>Aprende ratings de memoria.</small></div><b>›</b></button>
-          </div>
-          <div class="section-head"><div><span class="eyebrow">PERFIL</span><h2>Estadísticas</h2></div></div>
-          <div id="profileStats" class="profile-stats"></div>
-          <div class="legal-note">Proyecto fan no afiliado a EA. Ratings/datos incluidos son una muestra de estudio; odds y precios son simulados.</div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="market" aria-label="Mercado">
-        <div class="scroll-content market-scroll">
-          <div class="subscreen-head"><button class="back-btn" data-nav="hub">‹</button><div><span class="eyebrow">MARKET LAB</span><h2>Watchlist</h2></div></div>
-          <div class="market-banner"><div><strong id="marketWatchCount">0</strong><span>en watchlist</span></div><p>Precios simulados para practicar decisiones de lanzamiento.</p></div>
-          <div class="market-controls"><div class="search-wrap"><span>⌕</span><input id="marketSearch" type="search" placeholder="Buscar jugador" /></div><select id="marketSort"><option value="target">Objetivo</option><option value="price">Precio</option><option value="meta">META</option><option value="ovr">GRL</option></select></div>
-          <div id="marketList" class="market-list"></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="academy" aria-label="Academy">
-        <div class="academy-layout">
-          <div class="subscreen-head"><button class="back-btn" data-nav="hub">‹</button><div><span class="eyebrow">ACADEMY</span><h2>¿Te sabes las cartas?</h2></div><div class="academy-score"><span>Racha</span><strong id="quizStreak">0</strong></div></div>
-          <div id="quizStage" class="quiz-stage"></div>
-          <div id="quizAnswers" class="quiz-answers"></div>
-          <button id="quizNextBtn" class="primary-btn quiz-next hidden">SIGUIENTE</button>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="draft" aria-label="Draft">
-        <div class="draft-layout">
-          <div class="subscreen-head"><button class="back-btn" data-nav="hub">‹</button><div><span class="eyebrow">DRAFT LAB</span><h2>Build a XI</h2></div><div class="draft-score"><strong id="draftRating">0</strong><small>GRL</small></div></div>
-          <div class="draft-info" id="draftInfo">Elige entre 5 jugadores por posición. No consume cartas de tu club.</div>
-          <div class="pitch draft-pitch" id="draftPitch"></div>
-          <div class="draft-footer" id="draftFooter"></div>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="sbc" aria-label="SBC">
-        <div class="scroll-content sbc-scroll">
-          <div class="subscreen-head"><button class="back-btn" data-nav="hub">‹</button><div><span class="eyebrow">SBC LAB</span><h2>Desafíos</h2></div></div>
-          <div class="sbc-intro"><strong>Usa tu club de verdad.</strong><p>Los jugadores entregados desaparecen del inventario. Los sobres obtenidos se guardan como tokens gratis en Pack Store.</p></div>
-          <div id="sbcList" class="sbc-list"></div>
-        </div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav" aria-label="Navegación principal">
-      <button class="nav-item active" data-nav="home"><span class="nav-icon">⌂</span><small>Inicio</small></button>
-      <button class="nav-item" data-nav="packs"><span class="nav-icon">✦</span><small>Packs</small></button>
-      <button class="nav-item" data-nav="club"><span class="nav-icon">▦</span><small>Club</small></button>
-      <button class="nav-item" data-nav="squad"><span class="nav-icon">◫</span><small>XI</small></button>
-      <button class="nav-item" data-nav="hub"><span class="nav-icon">•••</span><small>Más</small></button>
-    </nav>
-  </div>
-
-  <div id="packOpening" class="pack-opening hidden" aria-hidden="true">
-    <button class="opening-close" id="openingCloseBtn" aria-label="Cerrar">×</button>
-    <div class="opening-bg"><div class="tunnel-ring r1"></div><div class="tunnel-ring r2"></div><div class="tunnel-ring r3"></div><div class="beam b1"></div><div class="beam b2"></div><div class="beam b3"></div><div class="beam b4"></div></div>
-    <div class="opening-content"><div id="openingHint" class="opening-hint">TOCA PARA ACELERAR</div><div id="revealStage" class="reveal-stage"></div><div id="packResults" class="pack-results hidden"></div></div>
-  </div>
-
-  <div id="playerSheet" class="sheet-backdrop hidden" aria-hidden="true"><div class="bottom-sheet"><div class="sheet-grabber"></div><button id="sheetCloseBtn" class="sheet-close">×</button><div id="playerSheetContent"></div></div></div>
-  <div id="pickerSheet" class="sheet-backdrop hidden" aria-hidden="true"><div class="bottom-sheet picker-sheet"><div class="sheet-grabber"></div><button id="pickerCloseBtn" class="sheet-close">×</button><div class="picker-head"><div><span class="eyebrow">ESCOGER JUGADOR</span><h2 id="pickerTitle">Posición</h2></div><div class="search-wrap compact"><span>⌕</span><input id="pickerSearch" type="search" placeholder="Buscar" /></div></div><div id="pickerList" class="picker-list"></div></div></div>
-  <div id="filterSheet" class="sheet-backdrop hidden" aria-hidden="true"><div class="bottom-sheet compact-sheet"><div class="sheet-grabber"></div><button id="filterCloseBtn" class="sheet-close">×</button><span class="eyebrow">FILTROS DEL CLUB</span><h2>Qué quieres ver</h2><div class="filter-grid"><label>GRL mínimo<select id="filterOvr"><option value="0">Todos</option><option value="90">90+</option><option value="87">87+</option><option value="84">84+</option><option value="80">80+</option></select></label><label>Orden<select id="filterSort"><option value="ovr">Mayor GRL</option><option value="meta">Mayor META</option><option value="price">Mayor precio</option><option value="name">Nombre</option></select></label></div><button id="applyFilterBtn" class="primary-btn">APLICAR</button></div></div>
-  <div id="draftSheet" class="sheet-backdrop hidden" aria-hidden="true"><div class="bottom-sheet draft-sheet"><div class="sheet-grabber"></div><button id="draftSheetCloseBtn" class="sheet-close">×</button><span class="eyebrow">DRAFT PICK</span><h2 id="draftPickTitle">Elige</h2><div id="draftChoices" class="draft-choices"></div></div></div>
-  <div id="confirmSheet" class="sheet-backdrop hidden" aria-hidden="true"><div class="bottom-sheet compact-sheet"><div class="sheet-grabber"></div><button id="confirmCloseBtn" class="sheet-close">×</button><div id="confirmContent"></div></div></div>
-
-  <div id="toast" class="toast"></div>
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+<div id="app" class="app-shell">
+  <header class="topbar">
+    <button class="brand" data-nav="home"><span class="brand-mark">PV</span><span><b>PACKVERSE <i>27</i></b><small id="screenName">Inicio</small></span></button>
+    <div class="top-right"><span class="lvl">LV <b id="level">1</b></span><span class="coins"><i></i><b id="coins">25.000</b></span></div>
+  </header>
+  <main id="screen" class="screen"></main>
+  <nav class="bottom-nav">
+    <button data-nav="home" class="active"><span>⌂</span><small>Inicio</small></button>
+    <button data-nav="packs"><span>✦</span><small>Packs</small></button>
+    <button data-nav="club"><span>▦</span><small>Club</small></button>
+    <button data-nav="squad"><span>◇</span><small>XI</small></button>
+    <button data-nav="more"><span>•••</span><small>Más</small></button>
+  </nav>
+</div>
+<div id="overlay" class="overlay hidden"></div>
+<div id="sheet" class="sheet-backdrop hidden"><section class="sheet"><button id="sheetClose" class="x">×</button><div id="sheetBody"></div></section></div>
+<div id="toast" class="toast"></div>
+<script src="js/data.js"></script>
+<script src="v4/content.js"></script>
+<script src="v4/core.js"></script>
+<script src="v4/ui.js"></script>
+<script src="v4/game.js"></script>
+<script src="v4/main.js"></script>
 </body>
 </html>
