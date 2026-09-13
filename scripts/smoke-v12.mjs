@@ -59,11 +59,23 @@ const draftM={rating:84,chemistry:86,total:170};const curve=PV.v12DraftOpponentC
 for(const o of curve){const c=PV.v12DraftWinChance(draftM,o);assert(c>=.20&&c<=.82,'Draft win chance outside safe bounds')}
 const rewards=[0,1,2,3,4].map(PV.v12DraftReward);assert(rewards[0].coins===500&&rewards[4].pack==='80x5','Draft reward curve changed unexpectedly');assert(!rewards.some(r=>['totw','elite','84x3'].includes(r.pack)),'free Draft reward is too generous');
 const sameA=PV.v12DraftOpponent(2,draftM),sameB=PV.v12DraftOpponent(2,draftM);assert(JSON.stringify(sameA)===JSON.stringify(sameB),'displayed Draft opponent differs from simulated opponent');
+// Actually play the tournament engine twice: forced champion + forced first-round exit.
+const savedRender=PV.render;PV.render=()=>{};
+PV.state.draft={stage:'tournament',formation:'4-3-3',picks:{...sq},round:0,wins:0,history:[],rewardGranted:false};ctx.Math.random=()=>.01;for(let i=0;i<4&&PV.state.draft.stage==='tournament';i++)PV.playDraftMatch();assert(PV.state.draft.stage==='finished'&&PV.state.draft.wins===4&&PV.state.draft.history.length===4,'full Draft Cup champion path failed');assert(PV.state.draft.reward?.pack==='80x5','champion reward mismatch');
+PV.state.draft={stage:'tournament',formation:'4-3-3',picks:{...sq},round:0,wins:0,history:[],rewardGranted:false};ctx.Math.random=()=>.99;PV.playDraftMatch();assert(PV.state.draft.stage==='finished'&&PV.state.draft.wins===0&&PV.state.draft.history.length===1,'first-round Draft exit path failed');assert(PV.state.draft.reward?.coins===500&&!PV.state.draft.reward?.pack,'first-round reward too generous');ctx.Math.random=seeded;PV.render=savedRender;
 
 console.log('— SBC smoke');
-assert(PV.dupeCount()===0,'fresh profile should have zero dupes');const systemSrc=fs.readFileSync('v8/systems.js','utf8');assert(systemSrc.includes('usedIdentity')&&systemSrc.includes('new Set(ids).size!==ids.length'),'SBC same-player law missing');
-for(const p of bronze.slice(0,12)){PV.state.collection[p.id]=2}assert(PV.dupeCount()>=11,'could not create bronze duplicate bank');
-const manual=PV.SBC_MANUAL?.find(x=>x.req?.tier==='bronze');assert(manual,'manual bronze SBC missing');
+const systemSrc=fs.readFileSync('v8/systems.js','utf8');assert(systemSrc.includes('usedIdentity')&&systemSrc.includes('new Set(ids).size!==ids.length'),'SBC same-player law missing');
+const manual=PV.SBC_MANUAL?.find(x=>x.id==='bronze-links');assert(manual&&manual.req.tier==='bronze','manual bronze SBC missing');assert(manual.reward==='silver5'&&manual.req.rating<=60&&manual.req.chem<=10,'starter Bronze SBC is not a simple free-play step');
+// Search a valid unique 4-4-2 Bronze XI from the live dataset; if this fails the SBC is impossible even with infinite duplicates.
+const sbcSlots=PV.FORMATIONS['4-4-2'];let bronzeSolution=null;
+for(let attempt=0;attempt<600&&!bronzeSolution;attempt++){
+  const b={},used=new Set();
+  for(const slot of sbcSlots){const cand=bronze.filter(p=>PV.canPlay(p,slot.label)&&!used.has(p.identity));if(!cand.length)break;const pick=cand[Math.floor(ctx.Math.random()*cand.length)];b[slot.id]=pick.id;used.add(pick.identity)}
+  if(Object.keys(b).length!==11)continue;const mm=PV.metricsForSlots(b,sbcSlots),pp=Object.values(b).map(PV.byId),nations=new Set(pp.map(p=>p.nation)).size;if(mm.rating>=manual.req.rating&&mm.chemistry>=manual.req.chem&&nations>=manual.req.nations)bronzeSolution=b;
+}
+assert(bronzeSolution,'live Bronze pool cannot satisfy the starter SBC');
+for(const id of Object.values(bronzeSolution))PV.state.collection[id]=2;assert(PV.dupeCount()>=11,'valid Bronze SBC fixture does not create 11 duplicates');
 
 console.log('— Asset / visual smoke');
 const asset=fs.readFileSync('v12/assets.js','utf8'),css=fs.readFileSync('v12/styles.css','utf8'),game=fs.readFileSync('v12/game.js','utf8');
@@ -71,4 +83,4 @@ assert(asset.includes('exactName(x.strPlayer,p)&&exactClub(x.strTeam,p.club)'),'
 assert(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))')&&css.includes('grid-template-rows:repeat(3,1fr)'),'card stats are not FUT-like 2×3');assert(css.includes('object-position:center 12%'),'player portraits are not normalized to one crop');assert(css.includes('.pv12-draft-slot .pv8-field-card'),'Draft pitch is not using the real card skin');
 assert(game.includes('Date.now()-started>2800')&&game.includes('await wait(1500)'),'walkout became skippable/fast again');assert(game.includes('data-club12-mode')&&game.includes('pv12-filter-chips'),'Club special/84 quick-filter UI hooks missing');
 
-console.log(`PackVerse v0.12 AI smoke OK · ${D.PLAYERS.length} cards · ${bronze.length} bronzes · basic bronze ${(bronzeRate*100).toFixed(1)}% · ${D.TOTW.length} specials`);
+console.log(`PackVerse v0.12 AI smoke OK · ${D.PLAYERS.length} cards · ${bronze.length} bronzes · basic bronze ${(bronzeRate*100).toFixed(1)}% · ${D.TOTW.length} specials · full Draft + Bronze SBC feasible`);
