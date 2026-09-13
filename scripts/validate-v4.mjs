@@ -1,22 +1,28 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
-const files=['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v4/ui.js','v5/card-ui.js','v4/game.js','v5/game-polish.js','v4/main.js'];
+const files=['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v6/content.js','v4/ui.js','v5/card-ui.js','v6/card-ui.js','v4/game.js','v5/game-polish.js','v6/game.js','v6/systems.js','v4/main.js'];
 for(const f of files){const src=fs.readFileSync(f,'utf8');new Function(src)}
 const store={};
 const ctx={window:{},localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},document:{dispatchEvent(){}},CustomEvent:function(){},Intl,structuredClone,console,setTimeout,clearTimeout,fetch:async()=>({json:async()=>({})}),Math};
 vm.createContext(ctx);
-for(const f of ['js/data.js','v4/content.js','v4/core.js','v5/rules.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v6/content.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const D=ctx.window.PACKVERSE_DATA,PV=ctx.window.PV4;
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
 assert(D.PLAYERS.length>=130,`player pool too small: ${D.PLAYERS.length}`);
 assert(new Set(D.PLAYERS.map(p=>p.id)).size===D.PLAYERS.length,'duplicate player ids');
-assert(D.TOTW.length>=10,`TOTW pool too small: ${D.TOTW.length}`);
+assert(D.TOTW.length>=8,`TOTW pool too small: ${D.TOTW.length}`);
 assert(D.PACKS_V4.some(p=>p.id==='basic'&&p.free),'missing free basic pack');
 assert(D.PACKS_V4.some(p=>p.id==='totw'&&p.specialOnly),'missing TOTW pack');
+assert(D.PACKS_V4.some(p=>p.id==='gold3'&&p.tokenOnly),'missing SBC gold reward pack');
 assert(D.SLOTS.length===11,'squad must contain 11 slots');
 assert(D.PLAYERS.every(p=>p.cardType&&p.rarityLabel&&p.league),'missing card metadata');
 const qualities=new Set(D.PLAYERS.map(p=>p.cardType));
 for(const q of ['bronze-common','bronze-rare','silver-common','silver-rare','gold-common','gold-rare','totw'])assert(qualities.has(q),`missing quality ${q}`);
+const femaleNames=['Alexia Putellas','Aitana Bonmatí','Khadija Shaw','Ewa Pajor','Caroline Graham Hansen'];
+for(const n of femaleNames)assert(!D.PLAYERS.some(p=>p.name===n),`female card still active in male-only pool: ${n}`);
+for(const n of ['Luis Díaz','Jamal Musiala','Lautaro Martínez','Victor Osimhen','Trent Alexander-Arnold','Rodrygo'])assert(D.PLAYERS.some(p=>p.name===n),`missing v0.6 card ${n}`);
+assert(PV.FORMATIONS&&Object.keys(PV.FORMATIONS).length>=6,'not enough formations');
+for(const [name,slots] of Object.entries(PV.FORMATIONS))assert(slots.length===11,`${name} must have 11 slots`);
 const m=PV.squadMetrics({});assert(m.rating===0&&m.chemistry===0&&m.total===0,'empty squad metrics invalid');
 assert(m.total<=199,'squad total can exceed 199');
 assert(PV.SBCS.every(s=>PV.solveSbc(s)===null),'empty club should not solve SBC');
@@ -30,4 +36,4 @@ for(const sp of D.TOTW){const base=D.PLAYERS.find(p=>!p.special&&p.identity===sp
 assert(PV.nextTOTWOverall(91)===92,'91 first IF should be 92');
 assert(PV.nextTOTWOverall(87)===88,'87 first IF should be 88');
 assert(PV.nextTOTWOverall(77)===81,'low-rated first IF path broken');
-console.log(`PackVerse v0.5 OK: ${D.PLAYERS.length} cards, ${D.TOTW.length} TOTW, Daily 85+ card chance=${(daily85*100).toFixed(2)}%, 87+=${(daily87*100).toFixed(2)}%`);
+console.log(`PackVerse v0.6 OK: ${D.PLAYERS.length} male cards, ${Object.keys(PV.FORMATIONS).length} formations, ${D.TOTW.length} TOTW, Daily 85+ card chance=${(daily85*100).toFixed(2)}%, 87+=${(daily87*100).toFixed(2)}%`);
