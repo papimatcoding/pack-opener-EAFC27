@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
-const files=['js/data.js','v4/content.js','v4/core.js','v4/ui.js','v4/game.js','v4/main.js'];
+const files=['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v4/ui.js','v5/card-ui.js','v4/game.js','v5/game-polish.js','v4/main.js'];
 for(const f of files){const src=fs.readFileSync(f,'utf8');new Function(src)}
 const store={};
-const ctx={window:{},localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},document:{dispatchEvent(){}},CustomEvent:function(){},Intl,structuredClone,console,setTimeout,clearTimeout,fetch:async()=>({json:async()=>({})})};
+const ctx={window:{},localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},document:{dispatchEvent(){}},CustomEvent:function(){},Intl,structuredClone,console,setTimeout,clearTimeout,fetch:async()=>({json:async()=>({})}),Math};
 vm.createContext(ctx);
-for(const f of ['js/data.js','v4/content.js','v4/core.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['js/data.js','v4/content.js','v4/core.js','v5/rules.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const D=ctx.window.PACKVERSE_DATA,PV=ctx.window.PV4;
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
 assert(D.PLAYERS.length>=130,`player pool too small: ${D.PLAYERS.length}`);
@@ -20,4 +20,14 @@ for(const q of ['bronze-common','bronze-rare','silver-common','silver-rare','gol
 const m=PV.squadMetrics({});assert(m.rating===0&&m.chemistry===0&&m.total===0,'empty squad metrics invalid');
 assert(m.total<=199,'squad total can exceed 199');
 assert(PV.SBCS.every(s=>PV.solveSbc(s)===null),'empty club should not solve SBC');
-console.log(`PackVerse v0.4 OK: ${D.PLAYERS.length} cards, ${D.TOTW.length} TOTW, ${D.PACKS_V4.length} packs, qualities=${[...qualities].join(',')}`);
+const daily=D.PACKS_V4.find(p=>p.id==='daily');
+assert(daily?.rule,'daily pack missing v0.5 odds rule');
+const daily85=daily.rule.bands.filter(b=>b[0]>=85).reduce((s,b)=>s+b[2],0);
+const daily87=daily.rule.bands.filter(b=>b[0]>=87).reduce((s,b)=>s+b[2],0);
+assert(daily85<=0.006,'daily 85+ odds too generous');
+assert(daily87<=0.001,'daily 87+ odds too generous');
+for(const sp of D.TOTW){const base=D.PLAYERS.find(p=>!p.special&&p.identity===sp.identity);if(base&&base.ovr>=86)assert(sp.ovr===base.ovr+1,`${sp.name} TOTW should be +1 OVR from high-rated base`)}
+assert(PV.nextTOTWOverall(91)===92,'91 first IF should be 92');
+assert(PV.nextTOTWOverall(87)===88,'87 first IF should be 88');
+assert(PV.nextTOTWOverall(77)===81,'low-rated first IF path broken');
+console.log(`PackVerse v0.5 OK: ${D.PLAYERS.length} cards, ${D.TOTW.length} TOTW, Daily 85+ card chance=${(daily85*100).toFixed(2)}%, 87+=${(daily87*100).toFixed(2)}%`);

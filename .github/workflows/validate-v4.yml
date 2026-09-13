@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.4
+name: Validate PackVerse v0.5
 
 on:
   pull_request:
@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Syntax and data checks
+      - name: Syntax, card progression and pack-odds checks
         run: node scripts/validate-v4.mjs
