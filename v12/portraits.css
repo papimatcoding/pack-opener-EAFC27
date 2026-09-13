@@ -1,4 +1,6 @@
 /* v0.12 human visual audit — normalize two fundamentally different image sources. */
+/* Reserve a real gap before the nameplate. The art box ends at 55.3%; the name starts at 57%. */
+.pv7-card .pv7-photo{height:46.5%!important}
 /* Official rectangular portraits: crop them like a FUT bust. */
 .pv7-card .pv7-photo img.pv12-art-official{
   width:112%!important;height:120%!important;max-width:none!important;max-height:none!important;
