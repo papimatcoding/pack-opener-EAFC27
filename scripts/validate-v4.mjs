@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
-const files=['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v6/content.js','v4/ui.js','v5/card-ui.js','v6/card-ui.js','v4/game.js','v5/game-polish.js','v6/game.js','v6/systems.js','v4/main.js'];
+const files=['js/data.js','v4/content.js','v4/core.js','v5/rules.js','v6/content.js','v4/ui.js','v5/card-ui.js','v6/card-ui.js','v4/game.js','v5/game-polish.js','v6/game.js','v6/systems.js','v6/cleanup.js','v4/main.js'];
 for(const f of files){const src=fs.readFileSync(f,'utf8');new Function(src)}
 const store={};
 const ctx={window:{},localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},document:{dispatchEvent(){}},CustomEvent:function(){},Intl,structuredClone,console,setTimeout,clearTimeout,fetch:async()=>({json:async()=>({})}),Math};
