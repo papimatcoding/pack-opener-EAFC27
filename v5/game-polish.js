@@ -17,7 +17,7 @@ async function revealWalkout(pack,pulls){
 }
 PV.openPack=async id=>{
  const pack=D.PACKS_V4.find(p=>p.id===id);if(!pack)return;const a=PV.packAccess(pack);if(!a.ok)return PV.toast(a.label==='MAÑANA'?'El Daily vuelve mañana':pack.tokenOnly?'Se consigue como recompensa':'No tienes coins suficientes');
- PV.consumePack(pack);const pulls=PV.makePack(pack);pulls.forEach(PV.addPlayer);PV.state.xp+=Math.max(0,pulls[0].ovr-80)*5;PV.save();
+ PV.consumePack(pack);const pulls=PV.makePack(pack);pulls.forEach(p=>PV.addPlayer(p));PV.state.xp+=Math.max(0,pulls[0].ovr-80)*5;PV.save();
  const best=pulls[0];if(best.special||best.ovr>=85)await revealWalkout(pack,pulls);else{const o=$('#overlay');o.className='overlay';o.innerHTML='<div class="pack-flash"></div>';await sleep(140);resultScreen(pack,pulls)}
 };
 })();
