@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+const files=['js/data.js','v4/content.js','v4/core.js','v4/ui.js','v4/game.js','v4/main.js'];
+for(const f of files){const src=fs.readFileSync(f,'utf8');new Function(src)}
+const store={};
+const ctx={window:{},localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},document:{dispatchEvent(){}},CustomEvent:function(){},Intl,structuredClone,console,setTimeout,clearTimeout,fetch:async()=>({json:async()=>({})})};
+vm.createContext(ctx);
+for(const f of ['js/data.js','v4/content.js','v4/core.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+const D=ctx.window.PACKVERSE_DATA,PV=ctx.window.PV4;
+const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
+assert(D.PLAYERS.length>=130,`player pool too small: ${D.PLAYERS.length}`);
+assert(new Set(D.PLAYERS.map(p=>p.id)).size===D.PLAYERS.length,'duplicate player ids');
+assert(D.TOTW.length>=10,`TOTW pool too small: ${D.TOTW.length}`);
+assert(D.PACKS_V4.some(p=>p.id==='basic'&&p.free),'missing free basic pack');
+assert(D.PACKS_V4.some(p=>p.id==='totw'&&p.specialOnly),'missing TOTW pack');
+assert(D.SLOTS.length===11,'squad must contain 11 slots');
+assert(D.PLAYERS.every(p=>p.cardType&&p.rarityLabel&&p.league),'missing card metadata');
+const qualities=new Set(D.PLAYERS.map(p=>p.cardType));
+for(const q of ['bronze-common','bronze-rare','silver-common','silver-rare','gold-common','gold-rare','totw'])assert(qualities.has(q),`missing quality ${q}`);
+const m=PV.squadMetrics({});assert(m.rating===0&&m.chemistry===0&&m.total===0,'empty squad metrics invalid');
+assert(m.total<=199,'squad total can exceed 199');
+assert(PV.SBCS.every(s=>PV.solveSbc(s)===null),'empty club should not solve SBC');
+console.log(`PackVerse v0.4 OK: ${D.PLAYERS.length} cards, ${D.TOTW.length} TOTW, ${D.PACKS_V4.length} packs, qualities=${[...qualities].join(',')}`);
