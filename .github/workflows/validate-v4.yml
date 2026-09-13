@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.9
+name: Validate PackVerse v0.11
 
 on:
   pull_request:
@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Syntax, real pool, strict assets, cards and SBC checks
+      - name: Syntax, verified assets, card proportions, Companion layout and gameplay checks
         run: node scripts/validate-v4.mjs
