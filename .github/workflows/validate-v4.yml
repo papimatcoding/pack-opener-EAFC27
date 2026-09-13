@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.11
+name: Validate PackVerse v0.12
 
 on:
   pull_request:
@@ -16,5 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Syntax, verified assets, card proportions, Companion layout and gameplay checks
+      - name: Legacy regression checks
         run: node scripts/validate-v4.mjs
+      - name: AI smoke — packs, Club, XI, Draft Cup, SBC, assets and cards
+        run: node scripts/smoke-v12.mjs
