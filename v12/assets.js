@@ -46,9 +46,9 @@ PV.flag=n=>{
 };
 
 if(PV.state.assetPolicyVersion!==12){
-  PV.state.photos={};PV.state.photoMissesV12={};PV.state.assetPolicyVersion=12;PV.save?.();
+  PV.state.photos={};PV.state.photoMissesV12={};PV.state.photoSourcesV12={};PV.state.assetPolicyVersion=12;PV.save?.();
 }
-PV.state.photoMissesV12=PV.state.photoMissesV12||{};
+PV.state.photoMissesV12=PV.state.photoMissesV12||{};PV.state.photoSourcesV12=PV.state.photoSourcesV12||{};
 
 const namesFor=p=>{
   const n=norm(p.searchName||p.name),a=NAME_ALIASES[n]||[];
@@ -62,7 +62,7 @@ const inflight=new Map();
 PV.photoFor=async p=>{
   if(!p)return null;
   const key=norm(p.name),official=OFFICIAL[key];
-  if(official){PV.state.photos[p.id]=official;return official}
+  if(official){PV.state.photos[p.id]=official;PV.state.photoSourcesV12[p.id]='official';return official}
   if(PV.state.photos[p.id])return PV.state.photos[p.id];
   if(PV.state.photoMissesV12[p.id])return null;
   if(inflight.has(p.id))return inflight.get(p.id);
@@ -77,7 +77,7 @@ PV.photoFor=async p=>{
         const hit=arr.find(x=>String(x.strSport||'Soccer').toLowerCase()==='soccer'&&exactName(x.strPlayer,p)&&exactClub(x.strTeam,p.club));
         // Only transparent/cutout artwork is accepted. Generic thumbs create inconsistent crops and old-shirt errors.
         const url=hit?.strCutout||null;
-        if(url){PV.state.photos[p.id]=url;delete PV.state.photoMissesV12[p.id];PV.save?.();return url}
+        if(url){PV.state.photos[p.id]=url;PV.state.photoSourcesV12[p.id]='cutout';delete PV.state.photoMissesV12[p.id];PV.save?.();return url}
       }catch{transientError=true}
     }
     // Cache a miss only after real successful API responses. Network/rate-limit failures are retried later.
@@ -88,7 +88,8 @@ PV.photoFor=async p=>{
 };
 
 const pending=new Set();let queue=Promise.resolve();
-function paintPhoto(id,url){if(!url)return;document.querySelectorAll(`[data-photo="${CSS.escape(id)}"]`).forEach(n=>{n.innerHTML=`<img class="pv12-player-art" src="${esc(url)}" alt="" loading="lazy" decoding="async">`})}
+function photoSource(id,url){const p=PV.byId(id),official=p&&OFFICIAL[norm(p.name)];return official&&official===url?'official':PV.state.photoSourcesV12[id]||'cutout'}
+function paintPhoto(id,url){if(!url)return;const source=photoSource(id,url);PV.state.photoSourcesV12[id]=source;document.querySelectorAll(`[data-photo="${CSS.escape(id)}"]`).forEach(n=>{n.innerHTML=`<img class="pv12-player-art pv12-art-${source}" src="${esc(url)}" alt="" loading="lazy" decoding="async">`})}
 function enqueue(id){if(pending.has(id))return;const p=PV.byId(id);if(!p)return;pending.add(id);queue=queue.then(async()=>{const url=await PV.photoFor(p);if(url)paintPhoto(id,url);pending.delete(id);/* stay under public API burst limits */await new Promise(r=>setTimeout(r,1900))})}
 let observer=null;
 function photoObserver(){if(observer||typeof IntersectionObserver==='undefined')return observer;observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;const id=e.target.dataset.photo;if(id)enqueue(id);observer.unobserve(e.target)})},{rootMargin:'240px 0px'});return observer}
@@ -108,5 +109,5 @@ PV.hydrate=root=>{
   });
 };
 
-window.PV12_ASSET_AUDIT={policy:'official-first + exact-name/current-club cutout only',officialCount:Object.keys(OFFICIAL).length,remoteThrottleMs:1900};
+window.PV12_ASSET_AUDIT={policy:'official-first + exact-name/current-club cutout only',officialCount:Object.keys(OFFICIAL).length,remoteThrottleMs:1900,portraitClasses:['official','cutout']};
 })();
