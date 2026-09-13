@@ -1,0 +1,72 @@
+/* PackVerse v0.12 — card identity, portrait scale and badge alignment */
+
+/* Keep the card readable at every size: rating left, portrait dominant, identity row anchored. */
+.pv7-card{container-type:inline-size}
+.pv7-card .pv7-rating{left:8.2%;top:7.5%;z-index:7;min-width:18%;text-shadow:0 .35cqw .7cqw #fff4}
+.pv7-card .pv7-rating b{font-size:15.4cqw;line-height:.8;letter-spacing:-.85cqw}
+.pv7-card .pv7-rating small{font-size:4.8cqw;margin-top:2.2cqw;letter-spacing:.16cqw}
+.pv7-card .pv7-quality{right:7.8%;top:7.8%;z-index:8;font-size:3.05cqw;letter-spacing:.28cqw;max-width:30%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Player art gets the largest visual zone and cannot collide with the rating block. */
+.pv7-card .pv7-photo{left:20%;right:3.8%;top:8.4%;height:48.5%;z-index:2;display:grid;place-items:end center;overflow:hidden}
+.pv7-card .pv7-photo .pv12-player-img,
+.pv7-card .pv7-photo>img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 1.65cqw 1.45cqw #0006)}
+.pv7-card .pv7-photo .pv7-silhouette{z-index:-1;width:60%;height:78%;opacity:.28}
+.pv7-card .pv7-photo:has(img) .pv7-silhouette{opacity:0}
+
+/* Stronger FC-style name divider and more breathing room before stats. */
+.pv7-card .pv7-name{left:7.8%;right:7.8%;top:58%;height:8.8%;z-index:7;font-size:5.2cqw;line-height:1;padding:0 2.3cqw;border-top:1px solid color-mix(in srgb,currentColor 58%,transparent);border-bottom:1px solid color-mix(in srgb,currentColor 42%,transparent);background:linear-gradient(90deg,transparent,#fff1 18% 82%,transparent)}
+.pv7-card .pv7-stats{left:7.4%;right:7.4%;top:68.8%;height:12.8%;z-index:7}
+.pv7-card .pv7-stats span{gap:1.05cqw}
+.pv7-card .pv7-stats small{font-size:2.65cqw;letter-spacing:.12cqw;opacity:.78}
+.pv7-card .pv7-stats b{font-size:5.8cqw;line-height:.88}
+
+/* Nationality / league / club are now one intentional identity strip. */
+.pv7-card .pv7-idrow{left:8.2%;right:8.2%;bottom:4.5%;height:9.3%;z-index:9;gap:3.6cqw;justify-content:center;overflow:visible}
+.pv7-card .pv7-idrow>span{display:grid;place-items:center;min-width:0}
+.pv7-card .pv7-flag{width:11cqw!important;height:7cqw!important;overflow:hidden!important}
+.pv7-card .pv7-flag .pv11-flag{width:100%;height:100%;flex-basis:auto;border-radius:.7cqw;box-shadow:0 0 0 .35cqw #0002}
+.pv7-card .pv8-club{width:11.8cqw;height:11.8cqw;flex:0 0 11.8cqw;overflow:visible!important}
+.pv7-card .pv8-league{width:18.5cqw;height:9.2cqw;flex:0 0 18.5cqw;overflow:visible!important}
+.pv7-card .pv8-club img,.pv7-card .pv8-league img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;object-position:center;filter:drop-shadow(0 .45cqw .55cqw #0003)}
+.pv7-card .pv8-club b,.pv7-card .pv8-league b{font-size:2.55cqw;font-weight:1000;opacity:.48;line-height:1;text-align:center}
+.pv7-card .pv8-club:has(img) b,.pv7-card .pv8-league:has(img) b{opacity:0}
+.pv7-card .pv7-chem{gap:1.25cqw;margin-left:.4cqw}
+.pv7-card .pv7-chem i{width:2.15cqw;height:2.15cqw}
+
+/* Make special-card frames read as distinct materials rather than recoloured golds. */
+.pv7-card.card-gold-common{background:radial-gradient(circle at 69% 17%,#fff7,transparent 23%),linear-gradient(145deg,#e5cc70,#9b7923 73%)!important}
+.pv7-card.card-gold-rare{background:radial-gradient(circle at 67% 15%,#fff9,transparent 24%),linear-gradient(145deg,#ffe99b,#b98713 72%)!important}
+.pv7-card.card-silver-common{background:radial-gradient(circle at 69% 16%,#fff9,transparent 24%),linear-gradient(145deg,#dce2e5,#7d888d 73%)!important}
+.pv7-card.card-silver-rare{background:radial-gradient(circle at 68% 15%,#fff,transparent 23%),linear-gradient(145deg,#f5f7f8,#8a979d 73%)!important}
+.pv7-card.card-bronze-common{background:radial-gradient(circle at 68% 16%,#ffd9bf55,transparent 24%),linear-gradient(145deg,#bb7a53,#70442e 73%)!important}
+.pv7-card.card-bronze-rare{background:radial-gradient(circle at 68% 15%,#ffe0c377,transparent 23%),linear-gradient(145deg,#d89566,#7c472c 73%)!important}
+.pv7-card.card-totw{background:radial-gradient(circle at 68% 15%,#f4d05a2e,transparent 25%),repeating-linear-gradient(132deg,#e0b83d0c 0 2px,transparent 2px 12px),linear-gradient(150deg,#2e2919,#070806 72%)!important}
+
+/* Field cards: keep actual art large and identity clean. */
+.pv8-field-card{container-type:inline-size}
+.pv8-field-face{left:20%!important;right:3%!important;top:7%!important;height:60%!important;overflow:hidden!important}
+.pv8-field-face .pv12-player-img,.pv8-field-face>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain!important;object-position:center bottom!important}
+.pv8-field-face .pv7-silhouette{opacity:.24}
+.pv8-field-face:has(img) .pv7-silhouette{opacity:0}
+.pv8-field-rating{z-index:7!important}.pv8-field-name{z-index:7!important}
+.pv8-field-bottom{z-index:8!important;gap:4.3cqw!important}
+.pv8-field-club{position:relative!important;overflow:visible!important}
+.pv8-field-club img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.pv8-field-club:has(img) b{opacity:0}
+
+/* On small cards, preserve the photo first; slightly reduce decorative identity spacing. */
+@media(max-width:420px){
+  .pv7-card .pv7-idrow{gap:3cqw}
+  .pv7-card .pv8-league{width:17cqw;flex-basis:17cqw}
+  .pv7-card .pv8-club{width:11cqw;height:11cqw;flex-basis:11cqw}
+}
+
+/* Desktop club gallery: slightly larger cards so faces and stats are actually legible. */
+@media(min-width:900px){
+  .card-grid{grid-template-columns:repeat(auto-fill,minmax(164px,1fr))!important;gap:22px!important}
+  .card-grid .pv7-card{max-width:198px!important}
+  .results .result-grid>*{width:188px!important;max-width:188px!important}
+  .results .result-grid>*:last-child:nth-child(odd){width:188px!important;max-width:188px!important}
+}
+@media(min-width:1200px){.card-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
