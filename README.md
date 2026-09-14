@@ -11,38 +11,62 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 **Last handoff update:** 2026-09-14  
 **Production:** `V0.17 Asset Persistence + Lazy Player Hydration + Deterministic Crest Expansion — LIVE`  
 **Production commit:** `43f289f054321aec2f120f96d7da732309016443`  
-**Release PR:** `#46` — merged  
 **Production validation:** run #57 (`34885544112`) — **SUCCESS**  
 **GitHub Pages deploy:** run #25 (`34885637265`) — **SUCCESS**  
 **Integration branch:** `dev`  
-**Next P0:** deterministic Spanish club/competition coverage, then verified current-shirt player-art expansion.
-
-### Why V0.17 exists
-
-The missing-image problem was not only a coverage issue. Several historical asset layers used exact-version migration guards, so newer saved versions could make old code wipe valid photos again during reload. The full audit found this pattern in V9/V10/V11/V12/V14/V15.
-
-V0.17 makes the complete legacy migration chain monotonic. A newer cache/policy version can no longer trigger an older destructive migration. Run #55 proved a verified current-club cutout survives a real Chromium full reload; production run #57 repeated the full suite successfully.
+**V0.18 candidate:** `Spanish Deterministic Identity Expansion`  
+**V0.18 status:** implementation on `feat/v018-spanish-identity`; full dev CI + browser screenshot review required before release.
 
 ---
 
-## 🖼️ V0.17 ASSET CHANGES
+## 🇪🇸 V0.18 SPANISH IDENTITY EXPANSION
 
-### Persistent verified player art
+V0.18 attacks the biggest remaining identity gap without weakening the correctness rules. `v18/assets.js` pins deterministic football-data crest URLs for 21 Spanish clubs where the current/verified provider identity is known, including the highest-priority LALIGA HYPERMOTION clubs.
 
-- V9/V10 asset-match migrations and V11/V12/V14/V15 asset-policy migrations are monotonic.
-- Existing verified current-club transparent cutouts survive full reloads.
-- V0.17 clears only the old negative V15 lookup cache once so previous false misses get another chance.
-- Verified positive photo cache is preserved.
+### Newly pinned in V0.18
 
-### Player lookup is viewport-lazy again
+- CE Sabadell FC → `8921`
+- Racing Santander → `5335`
+- R. Oviedo → `1048`
+- R. Valladolid CF → `250`
+- Burgos CF → `9298`
+- AD Ceuta FC → `7445`
+- Real Sociedad B → `9381`
+- Granada CF → `83`
+- Albacete BP → `237`
+- RCD Mallorca → `89`
+- CD Tenerife → `254`
+- CD Eldense → `9677`
+- SD Eibar → `278`
+- UD Las Palmas → `275`
+- Girona FC → `298`
+- Athletic Club → `77`
+- Espanyol → `80`
+- Rayo Vallecano → `87`
+- Real Sociedad → `92`
+- CD Leganés → `745`
+- FC Andorra → provider's deterministic `andorra.svg`
 
-V16's final hydrator could trigger a large whole-Club request burst. `v17/assets.js` is now the final hydrator: safe cached cutouts paint immediately, unresolved players are resolved only near the viewport through IntersectionObserver, and remote photo requests remain sequential/throttled. Club/league hydration is bounded as well.
+Do **not** add Cádiz, Almería, Córdoba, Castellón, Sporting or any other unresolved club by guessing an ID merely to increase the percentage. A correct text fallback is still preferable to the wrong badge.
 
-### Deterministic crest expansion
+### V0.18 QA additions
 
-The machine report records **24 / 64 clubs with deterministic crest mappings (37.5%)**. V0.17 adds verified football-data IDs for Aston Villa, Everton, Burnley, Brentford, Brighton, Crystal Palace, West Ham, Wolverhampton and Leeds United on top of the existing core registry.
+- `scripts/smoke-v18.mjs` guards the verified registry, PWA wiring and no-guess policy.
+- `scripts/report-assets-v18.mjs` measures total deterministic coverage and Spanish-only deterministic coverage, and outputs the remaining Spanish gaps.
+- `scripts/browser-spanish-assets-v18.mjs` seeds real Spanish cards in Chromium, verifies the exact crest URL used by the rendered card and captures `mobile-spanish-identities-v18.png`.
+- Service worker cache is bumped to `packverse27-v18-spanish-identity`.
 
-This is deliberately not claimed as complete. The report lists 40 remaining deterministic club gaps; Spanish / LALIGA HYPERMOTION identities are the next P0.
+---
+
+## 🖼️ V0.17 PERSISTENCE BASE — PRESERVE
+
+The missing-image problem was not only coverage. Historical V9/V10/V11/V12/V14/V15 asset migrations could erase newer verified photos on reload. V0.17 made the entire migration chain monotonic and restored viewport-lazy player hydration. Those guarantees remain mandatory under V0.18.
+
+- verified current-club transparent cutouts survive reloads;
+- unresolved players are queried only near the viewport;
+- provider lookup remains throttled/sequential;
+- old negative lookup cache gets one controlled retry;
+- verified positive cache is preserved.
 
 ---
 
@@ -56,7 +80,8 @@ This is deliberately not claimed as complete. The report lists 40 remaining dete
 - Livaković remains pinned to his verified current FC Barcelona cutout;
 - all 11/11 IF/TOTW cards reuse their normal base-card art and current identity;
 - real crest/league assets have no fake circular plate;
-- unresolved identity remains quiet text rather than a fake badge.
+- unresolved identity remains quiet text rather than a fake badge;
+- deterministic club mappings must be verified, never inferred from a nearby name or placeholder ID.
 
 ---
 
@@ -69,46 +94,18 @@ This is deliberately not claimed as complete. The report lists 40 remaining dete
 - **14 leagues**
 - **8 manually verified current Barça cutouts**
 - **11/11 IF cards bound to base cards**
-- **24/64 deterministic club crests**
+- V0.17 production baseline: **24/64 deterministic club crests**
+- V0.18 adds **21 verified Spanish deterministic mappings**; final represented-club percentage comes from `asset-coverage-v18.json` after CI.
 
 Ratings/stats are PackVerse launch estimates, not official EA ratings.
 
 ---
 
-## ✅ V0.17 QA — LIVE
+## ✅ LAST STABLE QA
 
-Dev run #55 and production PR run #57 both passed every validation layer:
+V0.17 dev run #55 and production PR run #57 both passed legacy, V0.12–V0.17 static checks, all machine-readable reports, mobile/desktop Chromium Club + Draft smoke, seven-rarity matrix, current-shirt audit, reload-persistence audit and browser artifacts. GitHub Pages run #25 succeeded.
 
-- legacy regression checks;
-- V0.12 systems regression;
-- V0.13 seven-rarity card audit;
-- V0.14 player-integrity/pool audit;
-- V0.15 visual-asset guarantees;
-- V0.16 current-shirt + IF/base audit;
-- V0.17 migration/persistence/lazy-hydration smoke;
-- V0.14, V0.16 and V0.17 machine-readable reports;
-- real Chromium mobile + desktop Companion smoke;
-- Draft field smoke;
-- seven-rarity browser card matrix;
-- V0.16 current-shirt visual audit;
-- V0.17 real-browser reload-persistence + deterministic-crest audit;
-- browser artifact upload.
-
-### Human artifact review after run #55
-
-Reviewed `mobile-assets-v17.png`, `mobile-club.png`, `mobile-visual-audit-v16.png`, desktop Club/current-shirt screenshots, Draft and both seven-rarity matrices.
-
-Observed:
-
-- new Aston Villa / Everton / Brighton / Crystal Palace crests render correctly in the card identity row;
-- cards stay within the mobile two-column layout with no new overlap or clipping;
-- the V0.16 curated current-shirt players still render correctly after the V0.17 hydrator changes;
-- rarity materials and horizontal stats remain intact;
-- silhouettes remain deliberate where no safe cutout exists;
-- the persistence sentinel remains present after full reload with its current-club metadata intact;
-- no regression was seen in Draft geometry or desktop Club rendering.
-
-GitHub Pages run #25 succeeded after the production merge. V0.17 is live.
+V0.18 must pass all of those unchanged **plus** its new Spanish static/report/browser checks. Human review of `mobile-spanish-identities-v18.png` is mandatory before release.
 
 ---
 
@@ -120,25 +117,16 @@ GitHub Pages run #25 succeeded after the production merge. V0.17 is live.
 - `v16/content.js` — IF/base binding
 - `v16/assets.js` — current-shirt guard + verified Barça assets + IF reuse
 - `v16/visuals.css` — final cutout geometry
-- `v17/assets.js` — final hydrator, reload persistence recovery and deterministic crest expansion
+- `v17/assets.js` — final lazy hydrator + reload persistence recovery + first deterministic expansion
+- `v18/assets.js` — verified Spanish deterministic crest overlay
 
-Do not add another competing card renderer or weaken image verification.
+Do not add another competing card renderer.
 
 ---
 
-## 🔴 NEXT AFTER V0.17
+## 🔴 NEXT AFTER V0.18
 
-### P0 — deterministic Spanish identity coverage
-
-Use `asset-coverage-v17.json` as the checklist. Prioritise LALIGA HYPERMOTION / Spanish clubs with high representation: CE Sabadell FC, Racing Santander, Sporting Gijón, R. Oviedo, R. Valladolid CF, UD Almería, Cádiz CF, SD Eibar, Albacete BP, Burgos CF, CD Castellón, Córdoba CF and the remaining Spanish top-flight clubs.
-
-### P0 — verified player-art coverage
-
-Expand current-shirt transparent cutouts team-by-team, prioritising high-OVR and frequently packed players. Keep a measurable split between manually verified cutout, provider-safe cutout, silhouette and stale-blocked.
-
-### P1 — current-roster audit + visual crop polish
-
-Any transfer must invalidate stale art. After integrity, continue per-player crop overrides and small-screen typography/frame polish.
+First close only the remaining Spanish identity gaps that can be independently verified (expected candidates include Cádiz CF, UD Almería, Córdoba CF, CD Castellón, Sporting Gijón and Celta Fortuna). Then move to verified current-shirt player-art coverage team-by-team, prioritising high-OVR/high-frequency cards. Keep measurable states for manually verified cutout / provider-safe cutout / silhouette / stale-blocked.
 
 ---
 
@@ -152,12 +140,12 @@ Any transfer must invalidate stale art. After integrity, continue per-player cro
 6. Inspect screenshots manually.
 7. **Update this README after every meaningful improvement.**
 8. Release to `main` only after QA.
-9. Confirm Pages before calling a version live.
+9. Confirm Pages before calling the version live.
 
 ---
 
 ## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
-Open this README on `dev`, inspect `main`, `dev`, open PRs and latest Actions. Preserve the full monotonic migration chain, viewport-lazy lookup, current-shirt/silhouette law, recent-transfer guard, no-circle identity rule and 11/11 IF/base reuse. V0.17 is live; the next work is deterministic Spanish identity coverage, followed by verified player-art expansion.
+Open this README on `dev`, inspect `main`, `dev`, open PRs and latest Actions. V0.17 is live. If V0.18 has not yet passed full CI and human screenshot review, finish that before release. Preserve monotonic migrations, viewport-lazy lookup, current-shirt/silhouette law, no-circle identity rule, verified-only deterministic crest registry and 11/11 IF/base reuse.
 
 **This README is the canonical PackVerse handoff.**
