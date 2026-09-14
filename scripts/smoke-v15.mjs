@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
+for(const f of ['v15/assets.js','v15/visuals.css','index.html','sw.js'])assert(fs.existsSync(f),`missing ${f}`);
+const js=fs.readFileSync('v15/assets.js','utf8'),css=fs.readFileSync('v15/visuals.css','utf8'),html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8');
+new Function(js);
+assert(html.includes('v15/visuals.css'),'V0.15 visual CSS is not loaded');
+assert(html.includes('v15/assets.js'),'V0.15 assets resolver is not loaded');
+assert(sw.includes('packverse27-v15-visual-assets'),'PWA cache was not bumped');
+assert(sw.includes('./v15/visuals.css')&&sw.includes('./v15/assets.js'),'V0.15 files missing from PWA core');
+assert(js.includes('rawQueries(p)'),'raw canonical player-name query path missing');
+assert(js.includes('clubMatches(x.strTeam,p.club)'),'current club verification missing');
+assert(js.includes('validCutout(x.strCutout)'),'transparent cutout validation missing');
+assert(!js.includes('x.strThumb')&&!js.includes('x.strRender'),'unsafe portrait/render fallback reintroduced');
+assert(js.includes("assetPolicyVersion!==15"),'V0.15 cache migration missing');
+assert(css.includes('.pv15-has-asset b')&&css.includes('display:none!important'),'real crest/logo does not suppress fallback text');
+assert(css.includes('border-radius:0!important')&&css.includes('background:transparent!important'),'circle/disc identity background regression');
+assert(css.includes(':has(>img:not([style*="display: none"]))>b'),'pre-hydration fallback layering rule missing');
+console.log('PackVerse V0.15 visual asset smoke OK · clean league/club identity slots · raw-name cutout discovery · strict current-club silhouettes retained');
