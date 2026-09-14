@@ -9,8 +9,8 @@ function teamKeys(team){return [team,...(TEAM_ALIASES[team]||[])].map(norm).filt
 function nameKeys(p){return [p.searchName||p.name,p.name,...(PLAYER_ALIASES[p.name]||[])].map(norm).filter(Boolean)}
 function teamMatch(actual,target){const a=norm(actual);if(!a)return false;return teamKeys(target).some(k=>a===k||a.includes(k)||k.includes(a))}
 function nameMatch(actual,p){const a=norm(actual);if(!a)return false;return nameKeys(p).some(k=>a===k||a.includes(k)||k.includes(a))}
-// v0.8 accepted loose name-only fallbacks. Purge that cache once so old wrong shirts disappear.
-if(PV.state.assetMatchVersion!==9){PV.state.photos={};PV.state.assetMatchVersion=9;PV.save?.()}
+// v0.8 accepted loose name-only fallbacks. Purge that cache once, but never again after a newer match policy exists.
+if(Number(PV.state.assetMatchVersion||0)<9){PV.state.photos={};PV.state.assetMatchVersion=9;PV.save?.()}
 const sabadell='https://drop-assets.ea.com/images/aIrhRNIaKr0UWY3sbwxHo/1fa8ec800517b3804005ad84e26c4d80/l15021.png';
 PV.clubLogoSync=club=>club==='CE Sabadell FC'?sabadell:(PV.state.clubLogos?.[club]||null);
 PV.clubLogoFor=async club=>{if(!club)return null;if(club==='CE Sabadell FC')return sabadell;PV.state.clubLogos=PV.state.clubLogos||{};if(PV.state.clubLogos[club])return PV.state.clubLogos[club];for(const q0 of [club,...(TEAM_ALIASES[club]||[])]){try{const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=${encodeURIComponent(q0)}`),j=await r.json(),teams=j?.teams||[],t=teams.find(x=>teamMatch(x.strTeam,club)||teamMatch(x.strTeamAlternate,club)),url=t?.strBadge||t?.strLogo||null;if(url){PV.state.clubLogos[club]=url;PV.save();return url}}catch{}}return null};
