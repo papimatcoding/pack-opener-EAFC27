@@ -1,0 +1,13 @@
+/* V0.13 human-smoke corrections. Keep after cards.css. */
+/* Rectangular club portraits must not expose a hard photo rectangle inside a FUT-style card. */
+.pv13-card .pv13-art img.pv12-art-official{
+  -webkit-mask-image:radial-gradient(ellipse 76% 96% at 50% 48%,#000 50%,#000 61%,transparent 82%)!important;
+  mask-image:radial-gradient(ellipse 76% 96% at 50% 48%,#000 50%,#000 61%,transparent 82%)!important;
+}
+.pv13-field .pv13-field-art img.pv12-art-official{
+  -webkit-mask-image:radial-gradient(ellipse 78% 96% at 50% 48%,#000 48%,#000 60%,transparent 82%)!important;
+  mask-image:radial-gradient(ellipse 78% 96% at 50% 48%,#000 48%,#000 60%,transparent 82%)!important;
+}
+/* Text fallback stays intentionally quiet but visible if an external crest/emblem cannot load. */
+.pv13-card .pv13-idrow [data-club-badge]>b,.pv13-card .pv13-idrow [data-league-badge]>b{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;border:1px solid color-mix(in srgb,currentColor 48%,transparent)!important;border-radius:50%!important;font-size:2.5cqw!important;font-weight:1000!important;opacity:.68!important;background:#fff1!important}
+.pv13-field [data-club-badge]>b{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;border:1px solid currentColor!important;border-radius:50%!important;font-size:5cqw!important;font-weight:1000!important;opacity:.62!important}
