@@ -45,7 +45,9 @@ PV.flag=n=>{
   return `<span class="pv11-flag" title="${esc(n)}" aria-label="${esc(n)}"><img src="https://flagcdn.com/${code}.svg" alt="${esc(n)}" loading="lazy" decoding="async"></span>`;
 };
 
-if(PV.state.assetPolicyVersion!==12){
+// Migration must be monotonic. If a later layer has already advanced assetPolicyVersion,
+// V12 must never interpret that as a downgrade and wipe verified photos on reload.
+if(Number(PV.state.assetPolicyVersion||0)<12){
   PV.state.photos={};PV.state.photoMissesV12={};PV.state.photoSourcesV12={};PV.state.assetPolicyVersion=12;PV.save?.();
 }
 PV.state.photoMissesV12=PV.state.photoMissesV12||{};PV.state.photoSourcesV12=PV.state.photoSourcesV12||{};

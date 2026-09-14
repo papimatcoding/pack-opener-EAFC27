@@ -11,8 +11,9 @@ assert(js.includes('rawQueries(p)'),'raw canonical player-name query path missin
 assert(js.includes('clubMatches(x.strTeam,p.club)'),'current club verification missing');
 assert(js.includes('validCutout(x.strCutout)'),'transparent cutout validation missing');
 assert(!js.includes('x.strThumb')&&!js.includes('x.strRender'),'unsafe portrait/render fallback reintroduced');
-assert(js.includes("assetPolicyVersion!==15"),'V0.15 cache migration missing');
+assert(js.includes('Number(PV.state.assetPolicyVersion||0)<15'),'V0.15 monotonic cache migration missing');
+assert(!js.includes('assetPolicyVersion!==15'),'V0.15 can wipe later-policy artwork on reload');
 assert(css.includes('.pv15-has-asset b')&&css.includes('display:none!important'),'real crest/logo does not suppress fallback text');
 assert(css.includes('border-radius:0!important')&&css.includes('background:transparent!important'),'circle/disc identity background regression');
 assert(css.includes(':has(>img:not([style*="display: none"]))>b'),'pre-hydration fallback layering rule missing');
-console.log('PackVerse V0.15 visual asset smoke OK · V0.15 guarantees preserved under later cache versions');
+console.log('PackVerse V0.15 visual asset smoke OK · V0.15 guarantees preserved under later cache versions · monotonic migration');

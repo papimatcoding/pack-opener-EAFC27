@@ -72,7 +72,9 @@ function validCutout(url){
 
 PV.state.photoMetaV15=PV.state.photoMetaV15||{};
 PV.state.photoMissesV15=PV.state.photoMissesV15||{};
-if(PV.state.assetPolicyVersion!==15){
+// Migration is monotonic: once a later layer has advanced the policy, V15 must never
+// reinterpret that as a downgrade and delete verified artwork on every reload.
+if(Number(PV.state.assetPolicyVersion||0)<15){
   // Keep only already-verified V14 cutouts that still point at the same current club.
   for(const p of PV.D.PLAYERS){
     const old=PV.state.photoMetaV14?.[p.id],url=PV.state.photos?.[p.id];
