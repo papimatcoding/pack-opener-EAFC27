@@ -5,7 +5,7 @@ const js=fs.readFileSync('v18/assets.js','utf8'),html=fs.readFileSync('index.htm
 assert(html.includes('<script src="v18/assets.js"></script>'),'V0.18 Spanish identity layer is not loaded');
 assert(sw.includes("packverse27-v18-spanish-identity")&&sw.includes('./v18/assets.js'),'V0.18 PWA cache wiring missing');
 const expected={
-  'CE Sabadell FC':'8921.png','Racing Santander':'5335.png','R. Oviedo':'1048.png','R. Valladolid CF':'250.png','Burgos CF':'9298.png','AD Ceuta FC':'7445.png','Real Sociedad B':'9381.png','Albacete BP':'237.png','SD Eibar':'278.png','UD Las Palmas':'275.png','Athletic Club':'77.png','Espanyol':'80.png','Rayo Vallecano':'87.png','Real Sociedad':'92.png'
+  'CE Sabadell FC':'8921.png','Racing Santander':'5335.png','R. Oviedo':'1048.png','R. Valladolid CF':'250.png','Burgos CF':'9298.png','AD Ceuta FC':'7445.png','Real Sociedad B':'9381.png','Albacete BP':'237.png','SD Eibar':'278.png','UD Las Palmas':'275.png','Athletic Club':'77.png','Espanyol':'80.png','Rayo Vallecano':'87.png','Real Sociedad':'92.png','UD Almería':'267.png','Cádiz CF':'264.png','Córdoba CF':'259.png','Sporting Gijón':'96.png'
 };
 for(const [club,file] of Object.entries(expected)){assert(js.includes(`'${club}':'https://crests.football-data.org/${file}'`),`verified deterministic Spanish crest missing ${club}`)}
 assert(js.includes("'FC Andorra':'https://crests.football-data.org/andorra.svg'"),'FC Andorra deterministic crest missing');
