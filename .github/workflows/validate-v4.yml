@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.12 Stabilization
+name: Validate PackVerse v0.13 Cards
 
 on:
   push:
@@ -21,10 +21,14 @@ jobs:
           node-version: 22
       - name: Legacy regression checks
         run: node scripts/validate-v4.mjs
-      - name: AI smoke — packs, Club, XI, Draft Cup, SBC, assets and cards
+      - name: V0.12 systems regression smoke
         run: node scripts/smoke-v12.mjs
-      - name: Chromium smoke — mobile + desktop Companion
+      - name: V0.13 canonical card audit — all seven rarities
+        run: node scripts/smoke-v13.mjs
+      - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
+      - name: Chromium card matrix — all seven rarities
+        run: node scripts/browser-card-matrix-v13.mjs
       - name: Upload browser smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4

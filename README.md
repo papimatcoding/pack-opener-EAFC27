@@ -1,6 +1,6 @@
 # PackVerse 27
 
-Mobile-first football card-collection PWA inspired by the game loop of Ultimate Team / MADFUT: packs, collection, chemistry, Squad Builder, Draft, SBC/DCP and progression. PackVerse is its own fan project and is not affiliated with EA.
+Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loops: packs, collection, chemistry, Squad Builder, Draft, SBC/DCP and progression. PackVerse is its own fan project and is not affiliated with EA.
 
 **Live / GitHub Pages:** https://papimatcoding.github.io/pack-opener-EAFC27/
 
@@ -11,237 +11,152 @@ Mobile-first football card-collection PWA inspired by the game loop of Ultimate 
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Production version:** `V0.12 Stabilized`  
-**Next update target:** `player photos + club/competition assets`  
+**Production version before release merge:** `V0.12 Stabilized`  
+**Dev release candidate:** `V0.13 Canonical Card Visual System — QA PASSED`  
+**Next target:** `asset coverage report + deterministic player/club/competition coverage + crop outliers`  
 
 ### Branch truth
 
-`main` is the stable branch deployed to GitHub Pages. **V0.12 Stabilization is now merged and live** through PR `#11`.
+`dev` is the canonical integration state and now contains the complete V0.13 card overhaul plus the fixes found during human screenshot review. V0.13 is ready for `dev → main`; after that merge, `main`/Pages becomes the production truth.
 
-`dev` is the canonical integration branch for future work. New product changes should land on `dev` first, pass QA there, and only then move to `main`.
+Historical V0.13 working branches/PRs are finished: initial card system PR #13, human-smoke fixes #14, browser-regression fix #15 and official-portrait vignette #16. Continue future product work from `dev`, not those branches.
 
-The old branch `v0.12-madfut-draft-smoke` and closed PR `#10` are historical/source work only. Do not merge them. Their useful pieces were selectively reconciled into `dev` before V0.12 Stabilization was merged.
+### Why V0.13 exists
 
-### What V0.12 Stabilized contains
+The user-provided mobile Club screenshot exposed that V0.12 cards were technically non-overlapping but still visually poor: oversized art, cramped 2×3 stats, weak nation/league/club hierarchy, tiny/fragile identity assets and insufficient common-vs-rare differentiation.
 
-- full V0.12 content layer and deeper real male bronze pool;
-- explicit Club `All / Specials / 84+ / Gold / Silver / Bronze` filters;
+### What V0.13 contains
+
+- `v13/card-ui.js` is the final canonical renderer for full `Card` and compact `FieldCard` output while compatibility classes keep existing features alive.
+- All seven active materials are explicit: `bronze-common`, `bronze-rare`, `silver-common`, `silver-rare`, `gold-common`, `gold-rare`, `totw`.
+- FC-era composition: OVR/position → portrait → name → **six horizontal stats** → nation / competition / club.
+- Common bronze/silver/gold are calmer; rare versions use a stronger radial/sunburst material; TOTW has its own black/gold skin.
+- Transparent cutouts are substantially less zoomed than V0.12.
+- Verified rectangular club photos use a smaller shaped portrait vignette with bottom fade instead of appearing as a raw pasted rectangle.
+- Club/competition/flag identity slots have fixed visual weight.
+- Core major club crests and league emblems are pinned deterministically; a local text badge sits under the remote image so a failed crest never leaves a blank slot.
+- Mobile Club guarantees two readable cards per row; desktop keeps a denser Companion gallery.
+- XI / Draft / SBC field cards retain the same rarity/material identity.
+- PWA cache is bumped so stale card CSS cannot survive the release.
+
+### Final V0.13 QA snapshot
+
+Latest green CI run: **run #30**, dev commit `2406e2a5a3fa3135b0f2035a22033e9baba23bb1`.
+
+Passed:
+
+- legacy regression suite;
+- V0.12 systems smoke;
+- V0.13 static audit for **7/7 card materials**;
+- Chromium mobile + desktop Club smoke;
+- Chromium Draft field smoke with 11/11 cards;
+- dedicated Chromium **7-card matrix** on mobile and desktop;
+- screenshot artifact upload;
+- no browser runtime exception in the final run.
+
+Human screenshot review was performed, not just geometry assertions. It caught two real issues during development: official rectangular photos looked pasted onto the card, and the first global image-error fallback caused a browser regression. Both were fixed and the complete suite was rerun successfully.
+
+Final matrix visually reviewed:
+
+- TOTW: distinct black/gold and readable;
+- gold rare: high-energy rare material;
+- gold common: deliberately calmer;
+- silver rare/common: clearly distinguishable;
+- bronze rare/common: clearly distinguishable;
+- transparent cutout: correctly integrated;
+- official rectangular portrait: now intentionally vignetted;
+- silhouette fallback: remains neutral and readable;
+- identity row: nation + competition + club remain inside reserved space.
+
+### Stable baseline that must not regress
+
+- ~262-card male pool and enough real bronzes for starter SBC progression;
 - free Basic Pack progression;
-- slower 85+ walkout implementation;
-- Draft Cup flow with four knockout rounds;
-- manual SBC systems and existing duplicate-only rules;
-- strict player-photo resolver: official first, otherwise exact player + current club + football cutout only;
-- separate portrait treatment for official rectangular photos vs transparent cutouts;
-- V0.12 card / Draft / Club styles;
-- Node integration smoke;
-- real Chromium smoke at mobile + desktop Companion sizes;
-- screenshots generated on CI for mandatory human review.
-
-### Latest QA snapshot
-
-Automated smoke passed on 2026-09-14:
-
-- **262 cards** loaded;
-- **39 bronze cards**;
-- Basic Pack simulated hundreds of times with **~81.7% bronze**;
-- all advertised pack item counts validated;
-- no duplicate card inside a normal reward pack;
-- Club `Specials` and `84+` visibility validated;
-- six formations / chemistry / `/199` limits validated;
-- Draft Cup curve + rewards validated;
-- bronze duplicate bank + starter SBC feasibility validated;
-- Chromium mobile `390×844` passed;
-- Chromium desktop `1440×900` passed;
-- Draft rendered **11/11** cards without vertical overflow;
-- card geometry showed positive gaps between photo → name → stats → identity row;
-- no browser runtime exceptions.
-
-### Latest human smoke
-
-Screenshots from the Chromium run were manually reviewed.
-
-Good:
-
-- mobile shell is stable and readable;
-- desktop Companion layout is stable and uses the width correctly;
-- Draft field no longer has the original broken mini-card layout;
-- rarity/material is preserved on field cards;
-- Club filters render correctly;
-- no obvious photo/name/stat overlap in the smoke fixtures.
-
-Still weak / next target:
-
-- **player art and identity assets are the weakest user-facing area**;
-- too many silhouettes for important players;
-- some available photos still have inconsistent crop / scale;
-- club badges and competition logos need deterministic verified coverage instead of runtime guesswork;
-- card identity row is still visually less polished than the rest of the app.
-
-**NEXT UPDATE SHOULD ATTACK ASSETS / PLAYER PHOTOS FIRST. Do not add a new game mode before this improves.**
+- Club `All / Specials / 84+ / Gold / Silver / Bronze` filters;
+- 85+ walkout pacing;
+- four-round Draft Cup;
+- duplicate-only manual SBCs with last-copy protection;
+- strict player-photo fallback: exact player + current club + football cutout only;
+- six formations, modern chemistry and `199 = 99 OVR + 100 chemistry` cap.
 
 ---
 
 ## 🎯 PRODUCT RULES ALREADY DECIDED
 
 - Male football only for now; women’s content comes later.
-- No Academy mode. The user learns cards by playing.
-- There must always be a free progression route: **Basic Packs → duplicates → SBC → better rewards**.
-- Draft is free.
-- Draft target loop: formation → 11 picks → Round of 16 / QF / SF / Final → modest placement-based reward.
-- SBC/DCP are manually built and currently consume **duplicates only**.
-- The last copy of a card is protected.
-- The same footballer cannot appear twice in one SBC squad, even if the club owns many copies.
-- Chemistry is inspired by modern FUT: club / nation / league, maximum 3 chemistry per player.
-- Team chemistry is normalized to **0–100**.
-- Team score maximum is **199 = 99 OVR + 100 chemistry**.
-- Card rarity/material must remain identical in Club, XI, Draft and SBC.
-- TOTW Lab and future fictional promos are PackVerse simulated content, clearly separated from official base data.
-- High-rated repeat TOTW cards normally receive restrained OVR growth; low-rated first IFs may jump more.
-- A correct silhouette is always preferable to a wrong player shirt / wrong identity image.
+- No Academy mode.
+- Always keep a free route: **Basic Packs → duplicates → SBC → better rewards**.
+- Draft is free: formation → 11 picks → R16 / QF / SF / Final → modest placement reward.
+- SBC/DCP are manually built and currently consume duplicates only; last copy is protected.
+- Same footballer cannot appear twice in one SBC squad.
+- Chemistry is club / nation / league inspired, max 3 per player; team chemistry is 0–100.
+- Team score max is **199**.
+- Card rarity/material must remain identical in packs, Club, XI, Draft and SBC.
+- TOTW Lab/future fictional promos are simulated PackVerse content, clearly separated from official base data.
+- Correct silhouette > wrong player / wrong shirt / wrong club image.
+- Visual quality is a release requirement; green tests alone are insufficient.
 
 ---
 
-## 🔴 CURRENT WEAKNESSES, IN PRIORITY ORDER
+## 🔴 NEXT WORK, IN PRIORITY ORDER
 
-### P0 — Player photos / asset integrity
+### P0 — Asset integrity / coverage
 
-Goal: every visible identity asset is either **verified and correct** or intentionally neutral.
+V0.13 fixes the card container; the next weakest point is **coverage**, not another card redesign.
 
-Required direction:
+1. Build an asset coverage report: player photos %, club badges %, competition logos %, flags %.
+2. Add canonical player / club / competition IDs.
+3. Expand deterministic verified photo and badge registries across the active dataset.
+4. Keep exact player + current club for any remote fallback.
+5. Preserve the three art profiles: `cutout`, `officialPortrait`, `silhouette`.
+6. Add per-player crop overrides only for true outliers.
+7. Complete LALIGA HYPERMOTION identity first, then LaLiga / Premier League / Bundesliga / Serie A / Ligue 1.
 
-1. canonical player / club / competition IDs;
-2. verified player photo table;
-3. verified badge / competition-logo table;
-4. external search becomes a development helper, not the final authority shown to users;
-5. exact player + current club for any remote fallback;
-6. no `strThumb`-style inconsistent generic portraits;
-7. standardized crop profiles: `officialPortrait`, `cutout`, `silhouette`;
-8. optional per-player crop override only for true outliers;
-9. asset coverage report: photos %, badges %, league logos %, flags %.
+### P0 — Retire historical card ownership
 
-### P0 — Canonical card component
+V0.13 is the final renderer, but historical `v4 → v12` layers still load for compatibility. Gradually prove and remove obsolete card overrides instead of adding endless `!important` patches.
 
-The app still contains historical CSS/JS layers from `v4` through `v12`. That was useful for speed but creates visual regressions.
+### P1 — Walkout / player pool / Draft / SBC polish
 
-Target after the asset pass:
-
-- one canonical full `Card` geometry;
-- one canonical `FieldCard` geometry;
-- one source of truth for rarity materials;
-- fixed zones for OVR/position, player art, name, six stats, nation, competition and club;
-- identical rarity in packs / Club / XI / Draft / SBC;
-- gradually retire old overrides instead of adding endless new patch layers.
-
-### P1 — Walkout / pack opening
-
-Normal pulls should remain fast but still have a short physical pack animation.
-
-85+ should use deliberate suspense:
-
-`nation → position → club → OVR → card`
-
-Target feel:
-
-- 85–86: ~5–6s;
-- 87–89: ~6.5–8s;
-- 90+: ~8–10s;
-- strong special: ~9–11s;
-- skip locked for the opening section;
-- no cheesy copy / beeps / unnecessary text.
-
-### P1 — Player pool
-
-Expand systematically, not randomly:
-
-1. complete **LALIGA HYPERMOTION** properly;
-2. complete LaLiga;
-3. Premier League;
-4. Bundesliga / Serie A / Ligue 1;
-5. other relevant men’s leagues.
-
-Enough real bronzes by position must always exist for bronze SBC progression.
-
-### P1 — Draft polish
-
-The V0.12 mechanics exist. Future polish should show generated opponent squads, match score/result presentation and clearer tournament progression without inflating rewards.
-
-### P1 — SBC polish
-
-Manual builder is the core. Future improvements: clearer live requirements, filters, groups, repeatable upgrades and player/promotional SBCs.
+Keep normal pulls fast. 85+ suspense remains `nation → position → club → OVR → card`. Expand the real player pool league-by-league. Draft should later show generated opponent squads/results more clearly. SBC needs clearer live requirements, filters/groups and repeatable upgrades.
 
 ---
 
 ## 🧪 RELEASE / SMOKE RULE — MANDATORY
 
-No version is considered finished because it “compiles”.
+Every release must pass all three layers.
 
-Every release must pass:
+### 1. Engine / AI smoke
 
-### 1. AI / engine smoke
+Validate runtime loading, dataset IDs, pack simulations/odds/item counts, no duplicate card in a normal pack, Club filters, formations/chemistry/199 cap, Draft curve/rewards, SBC duplicate laws, starter feasibility and asset-policy regressions.
 
-- load all runtime files;
-- dataset IDs / card metadata;
-- pack simulations and odds sanity;
-- no same card twice inside a normal pack;
-- Club filters including special + 84+;
-- XI / formations / chemistry / 199 cap;
-- Draft Cup opponent curve and realistic rewards;
-- SBC duplicate rules and starter-SBC feasibility;
-- asset-policy regression checks.
+For card work, `scripts/smoke-v13.mjs` must confirm all seven materials and both canonical renderers.
 
 ### 2. Real browser smoke
 
-Run Chromium on at least:
+Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, photo/name/stats/id-row gaps, Club filters, Draft 11/11 field cards and desktop Companion layout.
 
-- mobile `390×844`;
-- desktop `1440×900`.
-
-Check:
-
-- JS runtime exceptions;
-- horizontal/vertical overflow;
-- card bounding boxes;
-- photo/name/stats/id-row overlap;
-- Club special / 84+ UI;
-- Draft 11/11 field cards;
-- desktop sidebar / Companion layout.
-
-CI stores screenshots as `packverse-browser-smoke` workflow artifacts.
+For card work, also run `scripts/browser-card-matrix-v13.mjs`; it must render all seven rarities in real Chromium. CI stores screenshots in `packverse-browser-smoke`.
 
 ### 3. Human smoke
 
-The screenshots must actually be inspected. Review at minimum:
-
-- bronze common / bronze rare;
-- silver common / silver rare;
-- gold common / gold rare;
-- TOTW;
-- verified portrait;
-- transparent cutout;
-- silhouette fallback;
-- mobile Club;
-- desktop Club;
-- Draft field;
-- any visually changed screen in the release.
-
-If a screenshot looks wrong, green tests are not enough.
+Actually inspect screenshots. For card changes, review all seven materials plus cutout, official portrait, silhouette, mobile Club, desktop Club and field cards. If screenshots look wrong, fix them before `main` even if CI is green.
 
 ---
 
 ## 🌿 BRANCH WORKFLOW
 
-Use this unless there is a specific reason not to:
+1. `main` = stable deployed Pages.
+2. `dev` = canonical integration/current project state.
+3. Larger changes use `feat/...` or `fix/...` from `dev`.
+4. Merge feature work into `dev` first.
+5. Run engine + Chromium smoke.
+6. Inspect screenshots manually.
+7. **Update this README after every meaningful improvement.**
+8. PR `dev → main` only when stable.
+9. Confirm Pages and share the live link.
 
-1. `main` = stable, deployed Pages.
-2. `dev` = integration branch and current project state.
-3. Larger changes may use `feat/...` or `fix/...` branches from `dev`.
-4. Merge work into `dev` first.
-5. Run AI + Chromium + human smoke.
-6. Update this README handoff.
-7. PR `dev → main` only when the update is considered stable.
-8. Confirm Pages after merge and share the live link.
-
-Do **not** make direct product commits to `main` during normal development.
+Do not make normal product commits directly to `main`.
 
 ---
 
@@ -252,36 +167,35 @@ Do **not** make direct product commits to `main` during normal development.
 ├── index.html
 ├── js/data.js
 ├── v4/ ... v11/          # historical/runtime layers
-├── v12/
-│   ├── assets.js         # strict player art policy
-│   ├── content.js        # V0.12 content + bronze progression
-│   ├── game.js           # Club, packs, Draft Cup, V0.12 flows
-│   ├── portraits.css     # portrait/cutout normalization
-│   ├── runtime.js        # deterministic/testable runtime helpers
-│   └── styles.css        # V0.12 visual layer
+├── v12/                  # stabilized systems + strict art resolver
+├── v13/
+│   ├── assets.js         # deterministic core identity registry
+│   ├── card-ui.js        # canonical Card + FieldCard renderer
+│   ├── cards.css         # seven rarity materials + geometry
+│   └── audit-fixes.css   # fixes discovered by human screenshot review
 ├── scripts/
 │   ├── validate-v4.mjs
 │   ├── smoke-v12.mjs
-│   └── browser-smoke-v12.mjs
+│   ├── smoke-v13.mjs
+│   ├── browser-smoke-v12.mjs
+│   └── browser-card-matrix-v13.mjs
 ├── .github/workflows/
 ├── manifest.json
 └── sw.js
 ```
 
-Long-term technical direction: keep vanilla JS/PWA for now, but move toward clear `data/`, `core/`, `components/` and `features/` ownership instead of indefinitely adding versioned override layers.
+Long-term direction: keep vanilla JS/PWA for now, but move toward explicit `data/`, `core/`, `components/` and `features/` ownership rather than indefinite versioned overrides.
 
 ---
 
 ## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
-If context is lost, do this before making changes:
+1. Open this README on `dev` first.
+2. Inspect `main` and `dev` HEADs plus open PRs.
+3. Read **CURRENT PROJECT STATE**, **Final V0.13 QA snapshot** and **NEXT WORK**.
+4. Never assume an old V0.x feature branch is production.
+5. Continue from `dev`.
+6. Run mandatory smoke before moving anything to `main`.
+7. Update this README after the next meaningful improvement.
 
-1. open this README on `dev`;
-2. inspect `main` and `dev` HEADs;
-3. inspect open PRs;
-4. read the **CURRENT PROJECT STATE** and **NEXT UPDATE** above;
-5. do not assume an old V0.x branch is production;
-6. make changes from `dev`;
-7. run the mandatory smoke before merging anything to `main`.
-
-This README is the canonical handoff for PackVerse.
+**This README is the canonical handoff for PackVerse.**
