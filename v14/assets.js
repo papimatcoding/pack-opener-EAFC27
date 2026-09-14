@@ -15,7 +15,9 @@ const exactClub=(actual,club)=>clubsFor(club).includes(norm(actual));
 
 // V0.14 policy: ONLY transparent football cutouts for the player's CURRENT club.
 // Rectangular internet photos are intentionally discarded, including every old Sabadell portrait.
-if(PV.state.assetPolicyVersion!==14){
+// IMPORTANT: migration is monotonic. Later policies (V15/V16/...) must never cause V14 to wipe
+// verified artwork again on the next reload.
+if(Number(PV.state.assetPolicyVersion||0)<14){
   PV.state.photos={};PV.state.photoSourcesV12={};PV.state.photoMetaV14={};PV.state.photoMissesV14={};PV.state.assetPolicyVersion=14;PV.save?.();
 }
 PV.state.photoMetaV14=PV.state.photoMetaV14||{};PV.state.photoMissesV14=PV.state.photoMissesV14||{};

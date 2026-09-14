@@ -16,6 +16,6 @@ assert(!assets.includes('strThumb')&&!assets.includes('strRender'),'unsafe portr
 for(const league of ['LaLiga EA Sports','LALIGA HYPERMOTION','Premier League','Bundesliga','Serie A','Ligue 1'])assert(assets.includes(`'${league}'`),`league identity resolver missing ${league}`);
 assert(css.includes('.pv16-has-asset')&&css.includes('border-radius:0!important'),'identity slots can regress to circular badges');
 assert(css.includes('.pv16-player-art'),'V0.16 player-art profile missing');
-assert(sw.includes("packverse27-v16-card-assets"),'PWA cache was not bumped to V0.16');
+assert(/packverse27-v(?:16|1[7-9]|[2-9]\d)-/.test(sw),'PWA cache version regressed below V0.16');
 for(const f of ['./v16/visuals.css','./v16/content.js','./v16/assets.js'])assert(sw.includes(f),`PWA core missing ${f}`);
-console.log('PackVerse V0.16 smoke OK · Livakovic current Barça art · stale-transfer guard · IF/base image reuse · expanded identity coverage');
+console.log('PackVerse V0.16 smoke OK · Livakovic current Barça art · stale-transfer guard · IF/base image reuse · V16 guarantees preserved under later cache versions');
