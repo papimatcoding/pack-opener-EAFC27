@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.14 Integrity
+name: Validate PackVerse v0.15 Visual Assets
 
 on:
   push:
@@ -27,6 +27,8 @@ jobs:
         run: node scripts/smoke-v13.mjs
       - name: V0.14 player integrity + pool audit
         run: node scripts/smoke-v14.mjs
+      - name: V0.15 visual asset audit
+        run: node scripts/smoke-v15.mjs
       - name: V0.14 machine-readable asset coverage report
         run: node scripts/report-assets-v14.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
