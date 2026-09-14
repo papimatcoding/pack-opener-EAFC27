@@ -1,6 +1,6 @@
 # PackVerse 27
 
-Mobile-first football card-collection PWA inspired by the game loop of Ultimate Team / MADFUT: packs, collection, chemistry, Squad Builder, Draft, SBC/DCP and progression. PackVerse is its own fan project and is not affiliated with EA.
+Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loops: packs, collection, chemistry, Squad Builder, Draft, SBC/DCP and progression. PackVerse is its own fan project and is not affiliated with EA.
 
 **Live / GitHub Pages:** https://papimatcoding.github.io/pack-opener-EAFC27/
 
@@ -11,133 +11,114 @@ Mobile-first football card-collection PWA inspired by the game loop of Ultimate 
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Current feature branch:** `feat/v013-card-visual-system`  
-**Production version:** `V0.12 Stabilized`  
-**Integration candidate:** `V0.13 Canonical Card Visual System`  
-**Next target after V0.13:** `finish deterministic photo / club / competition asset coverage + per-player crop outliers`  
+**Production version before release merge:** `V0.12 Stabilized`  
+**Dev release candidate:** `V0.13 Canonical Card Visual System — QA PASSED`  
+**Next target:** `asset coverage report + deterministic player/club/competition coverage + crop outliers`  
 
 ### Branch truth
 
-`main` is stable and deployed to GitHub Pages. It currently contains **V0.12 Stabilized**.
+`dev` is the canonical integration state and now contains the complete V0.13 card overhaul plus the fixes found during human screenshot review. V0.13 is ready for `dev → main`; after that merge, `main`/Pages becomes the production truth.
 
-`dev` is the canonical integration branch. Product work must reach `dev`, pass automated Chromium + engine smoke and human screenshot review, then move `dev → main`.
-
-`feat/v013-card-visual-system` was created from `dev` specifically for the card overhaul requested after the 2026-09-14 mobile Club screenshot. Do not bypass QA by copying individual V0.13 files directly to `main`.
+Historical V0.13 working branches/PRs are finished: initial card system PR #13, human-smoke fixes #14, browser-regression fix #15 and official-portrait vignette #16. Continue future product work from `dev`, not those branches.
 
 ### Why V0.13 exists
 
-The V0.12 screenshot showed that “no overlap” was not enough. Cards were technically valid but visually weak:
+The user-provided mobile Club screenshot exposed that V0.12 cards were technically non-overlapping but still visually poor: oversized art, cramped 2×3 stats, weak nation/league/club hierarchy, tiny/fragile identity assets and insufficient common-vs-rare differentiation.
 
-- player art was too large / inconsistently cropped;
-- the 2×3 stat block looked cramped and unlike the current FC-era card language;
-- nation / league / club identity was tiny and visually unbalanced;
-- runtime badge fallback could leave initials such as `P` instead of a crest;
-- common vs rare cards did not feel different enough at a glance;
-- historical `v4 → v12` overrides still owned pieces of the same card.
+### What V0.13 contains
 
-### What V0.13 changes
+- `v13/card-ui.js` is the final canonical renderer for full `Card` and compact `FieldCard` output while compatibility classes keep existing features alive.
+- All seven active materials are explicit: `bronze-common`, `bronze-rare`, `silver-common`, `silver-rare`, `gold-common`, `gold-rare`, `totw`.
+- FC-era composition: OVR/position → portrait → name → **six horizontal stats** → nation / competition / club.
+- Common bronze/silver/gold are calmer; rare versions use a stronger radial/sunburst material; TOTW has its own black/gold skin.
+- Transparent cutouts are substantially less zoomed than V0.12.
+- Verified rectangular club photos use a smaller shaped portrait vignette with bottom fade instead of appearing as a raw pasted rectangle.
+- Club/competition/flag identity slots have fixed visual weight.
+- Core major club crests and league emblems are pinned deterministically; a local text badge sits under the remote image so a failed crest never leaves a blank slot.
+- Mobile Club guarantees two readable cards per row; desktop keeps a denser Companion gallery.
+- XI / Draft / SBC field cards retain the same rarity/material identity.
+- PWA cache is bumped so stale card CSS cannot survive the release.
 
-V0.13 is a **card-system pass, not a new game-mode update**.
+### Final V0.13 QA snapshot
 
-- introduces `v13/card-ui.js` as the final canonical renderer for full cards and field cards;
-- keeps compatibility classes so Club / packs / XI / Draft / SBC continue working;
-- explicitly audits all seven current materials: `bronze-common`, `bronze-rare`, `silver-common`, `silver-rare`, `gold-common`, `gold-rare`, `totw`;
-- moves base cards to a cleaner FC-era composition: OVR/position → portrait → name → six horizontal stats → nation/competition/club;
-- rare bronze/silver/gold use a stronger radial/sunburst treatment rather than only a small marker;
-- TOTW gets its own black/gold material and trim;
-- reduces transparent-cutout zoom substantially so shirts/torso no longer swallow the card;
-- preserves a separate crop profile for official rectangular portraits;
-- makes identity assets similar in visual weight instead of letting the league mark dominate;
-- guarantees two readable Club cards per row on phone widths;
-- applies the same material identity to compact XI / Draft / SBC field cards;
-- pins deterministic core club crests and major-league emblems before runtime fallback;
-- bumps the PWA cache so old card CSS cannot survive the release;
-- adds `scripts/smoke-v13.mjs` and makes CI explicitly check 7/7 materials and V0.13 loading.
+Latest green CI run: **run #30**, dev commit `2406e2a5a3fa3135b0f2035a22033e9baba23bb1`.
 
-### V0.12 baseline that must not regress
+Passed:
 
-- **262 cards** loaded; **39 bronze cards** in the last stable QA snapshot;
-- free Basic Pack progression, mostly bronze;
+- legacy regression suite;
+- V0.12 systems smoke;
+- V0.13 static audit for **7/7 card materials**;
+- Chromium mobile + desktop Club smoke;
+- Chromium Draft field smoke with 11/11 cards;
+- dedicated Chromium **7-card matrix** on mobile and desktop;
+- screenshot artifact upload;
+- no browser runtime exception in the final run.
+
+Human screenshot review was performed, not just geometry assertions. It caught two real issues during development: official rectangular photos looked pasted onto the card, and the first global image-error fallback caused a browser regression. Both were fixed and the complete suite was rerun successfully.
+
+Final matrix visually reviewed:
+
+- TOTW: distinct black/gold and readable;
+- gold rare: high-energy rare material;
+- gold common: deliberately calmer;
+- silver rare/common: clearly distinguishable;
+- bronze rare/common: clearly distinguishable;
+- transparent cutout: correctly integrated;
+- official rectangular portrait: now intentionally vignetted;
+- silhouette fallback: remains neutral and readable;
+- identity row: nation + competition + club remain inside reserved space.
+
+### Stable baseline that must not regress
+
+- ~262-card male pool and enough real bronzes for starter SBC progression;
+- free Basic Pack progression;
 - Club `All / Specials / 84+ / Gold / Silver / Bronze` filters;
 - 85+ walkout pacing;
-- Draft Cup with four knockout rounds;
-- manual duplicate-only SBC systems;
-- strict player-photo resolver: official first, otherwise exact player + current club + football cutout only;
-- six formations, modern chemistry and `/199` cap;
-- Chromium mobile `390×844` and desktop `1440×900` smoke;
-- Draft 11/11 field-card rendering without vertical overflow.
-
-### V0.13 QA status
-
-At this handoff point the feature implementation is complete on `feat/v013-card-visual-system`, but it is **not production until the branch is merged to `dev` and CI/human smoke are reviewed**.
-
-Mandatory V0.13 human review must inspect, not merely assert geometry:
-
-- bronze common;
-- bronze rare;
-- silver common;
-- silver rare;
-- gold common;
-- gold rare;
-- TOTW;
-- transparent cutout;
-- official rectangular portrait;
-- silhouette fallback;
-- mobile Club;
-- desktop Club;
-- XI/Draft field card.
-
-If one of these looks visually wrong, V0.13 is not done even if CI is green.
+- four-round Draft Cup;
+- duplicate-only manual SBCs with last-copy protection;
+- strict player-photo fallback: exact player + current club + football cutout only;
+- six formations, modern chemistry and `199 = 99 OVR + 100 chemistry` cap.
 
 ---
 
 ## 🎯 PRODUCT RULES ALREADY DECIDED
 
 - Male football only for now; women’s content comes later.
-- No Academy mode. The user learns cards by playing.
-- There must always be a free progression route: **Basic Packs → duplicates → SBC → better rewards**.
-- Draft is free: formation → 11 picks → Round of 16 / QF / SF / Final → modest placement reward.
-- SBC/DCP are manually built and currently consume **duplicates only**; the last copy is protected.
-- The same footballer cannot appear twice in one SBC squad.
-- Chemistry is club / nation / league inspired, maximum 3 per player; team chemistry is 0–100.
-- Team score maximum is **199 = 99 OVR + 100 chemistry**.
+- No Academy mode.
+- Always keep a free route: **Basic Packs → duplicates → SBC → better rewards**.
+- Draft is free: formation → 11 picks → R16 / QF / SF / Final → modest placement reward.
+- SBC/DCP are manually built and currently consume duplicates only; last copy is protected.
+- Same footballer cannot appear twice in one SBC squad.
+- Chemistry is club / nation / league inspired, max 3 per player; team chemistry is 0–100.
+- Team score max is **199**.
 - Card rarity/material must remain identical in packs, Club, XI, Draft and SBC.
-- TOTW Lab and future fictional promos are PackVerse simulated content and must remain clearly separate from official base data.
-- A correct silhouette is always preferable to a wrong player, wrong shirt or wrong club image.
-- Visual quality is a release requirement: green tests alone do not make a visual release acceptable.
+- TOTW Lab/future fictional promos are simulated PackVerse content, clearly separated from official base data.
+- Correct silhouette > wrong player / wrong shirt / wrong club image.
+- Visual quality is a release requirement; green tests alone are insufficient.
 
 ---
 
-## 🔴 CURRENT WEAKNESSES / NEXT WORK
+## 🔴 NEXT WORK, IN PRIORITY ORDER
 
-### P0 — Finish asset integrity
+### P0 — Asset integrity / coverage
 
-V0.13 pins core identity assets, but coverage is not complete. Required direction:
+V0.13 fixes the card container; the next weakest point is **coverage**, not another card redesign.
 
-1. canonical player / club / competition IDs;
-2. verified player-photo registry for important cards;
-3. deterministic badge / competition-logo coverage across the active dataset;
-4. runtime external search becomes a development helper, not final authority;
-5. exact player + current club for any remote fallback;
-6. standardized `officialPortrait`, `cutout`, `silhouette` crop profiles;
-7. per-player crop overrides only for real outliers;
-8. produce an asset coverage report: photos %, club badges %, league logos %, flags %.
+1. Build an asset coverage report: player photos %, club badges %, competition logos %, flags %.
+2. Add canonical player / club / competition IDs.
+3. Expand deterministic verified photo and badge registries across the active dataset.
+4. Keep exact player + current club for any remote fallback.
+5. Preserve the three art profiles: `cutout`, `officialPortrait`, `silhouette`.
+6. Add per-player crop overrides only for true outliers.
+7. Complete LALIGA HYPERMOTION identity first, then LaLiga / Premier League / Bundesliga / Serie A / Ligue 1.
 
 ### P0 — Retire historical card ownership
 
-V0.13 is now the final renderer, but old CSS/JS layers still load for compatibility. Gradually move card ownership into one component instead of adding `!important` patches forever. Do not delete old layers until pack/Club/XI/Draft/SBC regression tests prove they are unused.
+V0.13 is the final renderer, but historical `v4 → v12` layers still load for compatibility. Gradually prove and remove obsolete card overrides instead of adding endless `!important` patches.
 
-### P1 — Walkout / pack opening
+### P1 — Walkout / player pool / Draft / SBC polish
 
-Normal pulls should stay fast. 85+ suspense target remains `nation → position → club → OVR → card`, roughly 5–11 seconds depending on strength, without cheesy copy/beeps.
-
-### P1 — Player pool
-
-Expand systematically: complete **LALIGA HYPERMOTION**, then LaLiga, Premier League, Bundesliga / Serie A / Ligue 1, then other relevant men’s leagues. Keep enough real bronzes by position for SBC progression.
-
-### P1 — Draft / SBC polish
-
-Draft: generated opponent squads, clearer match/result presentation and tournament progression. SBC: clearer live requirements, filters, groups, repeatable upgrades and promotional/player SBCs.
+Keep normal pulls fast. 85+ suspense remains `nation → position → club → OVR → card`. Expand the real player pool league-by-league. Draft should later show generated opponent squads/results more clearly. SBC needs clearer live requirements, filters/groups and repeatable upgrades.
 
 ---
 
@@ -147,25 +128,19 @@ Every release must pass all three layers.
 
 ### 1. Engine / AI smoke
 
-- load runtime files and validate dataset IDs/card metadata;
-- pack simulations, odds sanity and item counts;
-- no duplicate card inside a normal pack;
-- Club special + 84+ filters;
-- XI / formations / chemistry / 199 cap;
-- Draft Cup curve/rewards;
-- SBC duplicate laws and starter feasibility;
-- asset-policy regression checks;
-- V0.13: all seven rarity materials and both canonical renderers must exist.
+Validate runtime loading, dataset IDs, pack simulations/odds/item counts, no duplicate card in a normal pack, Club filters, formations/chemistry/199 cap, Draft curve/rewards, SBC duplicate laws, starter feasibility and asset-policy regressions.
+
+For card work, `scripts/smoke-v13.mjs` must confirm all seven materials and both canonical renderers.
 
 ### 2. Real browser smoke
 
-Chromium minimum: mobile `390×844` and desktop `1440×900`.
+Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, photo/name/stats/id-row gaps, Club filters, Draft 11/11 field cards and desktop Companion layout.
 
-Check JS exceptions, horizontal/vertical overflow, card geometry, photo/name/stats/id-row gaps, Club filters, Draft 11/11 cards and desktop Companion layout. CI stores screenshots in `packverse-browser-smoke`.
+For card work, also run `scripts/browser-card-matrix-v13.mjs`; it must render all seven rarities in real Chromium. CI stores screenshots in `packverse-browser-smoke`.
 
 ### 3. Human smoke
 
-Actually inspect the screenshots. For a card release, review all seven materials plus official portrait, transparent cutout, silhouette, mobile Club, desktop Club and field cards. If screenshots look wrong, fix them before `main`.
+Actually inspect screenshots. For card changes, review all seven materials plus cutout, official portrait, silhouette, mobile Club, desktop Club and field cards. If screenshots look wrong, fix them before `main` even if CI is green.
 
 ---
 
@@ -177,11 +152,11 @@ Actually inspect the screenshots. For a card release, review all seven materials
 4. Merge feature work into `dev` first.
 5. Run engine + Chromium smoke.
 6. Inspect screenshots manually.
-7. Update this README after every meaningful improvement.
+7. **Update this README after every meaningful improvement.**
 8. PR `dev → main` only when stable.
 9. Confirm Pages and share the live link.
 
-Do **not** make normal product commits directly to `main`.
+Do not make normal product commits directly to `main`.
 
 ---
 
@@ -192,22 +167,18 @@ Do **not** make normal product commits directly to `main`.
 ├── index.html
 ├── js/data.js
 ├── v4/ ... v11/          # historical/runtime layers
-├── v12/
-│   ├── assets.js         # strict player-art policy
-│   ├── content.js        # V0.12 content + bronze progression
-│   ├── game.js           # Club, packs, Draft Cup, V0.12 flows
-│   ├── portraits.css     # source-specific portrait normalization
-│   ├── runtime.js        # deterministic/testable helpers
-│   └── styles.css
+├── v12/                  # stabilized systems + strict art resolver
 ├── v13/
 │   ├── assets.js         # deterministic core identity registry
 │   ├── card-ui.js        # canonical Card + FieldCard renderer
-│   └── cards.css         # seven rarity materials + responsive geometry
+│   ├── cards.css         # seven rarity materials + geometry
+│   └── audit-fixes.css   # fixes discovered by human screenshot review
 ├── scripts/
 │   ├── validate-v4.mjs
 │   ├── smoke-v12.mjs
 │   ├── smoke-v13.mjs
-│   └── browser-smoke-v12.mjs
+│   ├── browser-smoke-v12.mjs
+│   └── browser-card-matrix-v13.mjs
 ├── .github/workflows/
 ├── manifest.json
 └── sw.js
@@ -221,9 +192,9 @@ Long-term direction: keep vanilla JS/PWA for now, but move toward explicit `data
 
 1. Open this README on `dev` first.
 2. Inspect `main` and `dev` HEADs plus open PRs.
-3. Read **CURRENT PROJECT STATE**, **V0.13 QA status** and **CURRENT WEAKNESSES**.
+3. Read **CURRENT PROJECT STATE**, **Final V0.13 QA snapshot** and **NEXT WORK**.
 4. Never assume an old V0.x feature branch is production.
-5. Continue from `dev` unless an active feature branch is explicitly named here.
+5. Continue from `dev`.
 6. Run mandatory smoke before moving anything to `main`.
 7. Update this README after the next meaningful improvement.
 
