@@ -50,28 +50,26 @@ function baseFor(p){
   if(p.baseCardId){const x=basePlayers.find(b=>b.id===p.baseCardId);if(x)return x;}
   return basePlayers.find(b=>p.identity&&b.identity===p.identity)||basePlayers.find(b=>norm(b.name)===norm(p.name))||null;
 }
-function officialFor(p){
-  const b=baseFor(p)||p,key=norm(b?.name);
-  return b?.club==='FC Barcelona'?OFFICIAL_CURRENT_CUTOUTS[key]||null:null;
-}
-function validCutout(url){
-  if(!url)return false;const u=String(url).toLowerCase();
-  return (u.includes('/player/cutout/')||u.includes('/player_cutout/')||u.includes('photo-resources/')||u.endsWith('.png')||u.includes('.png?'))&&!u.includes('placeholder');
-}
+function officialFor(p){const b=baseFor(p)||p,key=norm(b?.name);return b?.club==='FC Barcelona'?OFFICIAL_CURRENT_CUTOUTS[key]||null:null;}
+function validCutout(url){if(!url)return false;const u=String(url).toLowerCase();return (u.includes('/player/cutout/')||u.includes('/player_cutout/')||u.includes('photo-resources/')||u.endsWith('.png')||u.includes('.png?'))&&!u.includes('placeholder');}
 function teamCandidates(club){return [club,...(TEAM_ALIASES[club]||[])].filter(Boolean)}
 function teamMatches(actual,club){const a=compact(actual);return teamCandidates(club).some(x=>{const b=compact(x);return a===b||(a.length>4&&b.length>4&&(a.includes(b)||b.includes(a)));});}
 
-PV.state.photoMetaV16=PV.state.photoMetaV16||{};
+PV.state.photoMetaV16=PV.state.photoMetaV16||{};PV.state.photoSourcesV12=PV.state.photoSourcesV12||{};
 PV.state.clubLogos=PV.state.clubLogos||{};PV.state.leagueLogos=PV.state.leagueLogos||{};
 if(PV.state.assetPolicyVersion!==16){
   for(const p of D.PLAYERS){
-    const key=norm((baseFor(p)||p).name),official=officialFor(p);
+    const b=baseFor(p)||p,key=norm(b.name),official=officialFor(p);
     if(official){
       PV.state.photos[p.id]=official;PV.state.photoSourcesV12[p.id]='cutout';
-      PV.state.photoMetaV16[p.id]={club:p.club,kind:'official-current-cutout',source:'FC Barcelona official',baseCardId:baseFor(p)?.id||p.id,verifiedAt:'2026-09-14'};
+      PV.state.photoMetaV16[p.id]={club:p.club,kind:p.special?'shared-base-cutout':'official-current-cutout',source:'FC Barcelona official',baseCardId:b.id,verifiedAt:'2026-09-14'};
     }else if(RECENT_TRANSFER_GUARD.has(key)){
-      delete PV.state.photos[p.id];delete PV.state.photoMetaV15?.[p.id];
+      delete PV.state.photos[p.id];if(PV.state.photoMetaV15)delete PV.state.photoMetaV15[p.id];
     }
+  }
+  for(const p of D.PLAYERS.filter(x=>x.special)){
+    const b=baseFor(p);if(!b||PV.state.photos[p.id]||!PV.state.photos[b.id])continue;
+    const meta=PV.state.photoMetaV15?.[b.id];if(meta?.club===b.club&&meta.kind==='cutout'&&!RECENT_TRANSFER_GUARD.has(norm(b.name))){PV.state.photos[p.id]=PV.state.photos[b.id];PV.state.photoSourcesV12[p.id]='cutout';PV.state.photoMetaV16[p.id]={club:p.club,kind:'shared-base-cutout',source:meta.source||'base-card',baseCardId:b.id,verifiedAt:meta.verifiedAt||null};}
   }
   PV.state.assetPolicyVersion=16;PV.save?.();
 }
@@ -91,14 +89,11 @@ PV.photoFor=async p=>{
     if(u){PV.state.photos[p.id]=u;PV.state.photoSourcesV12[p.id]='cutout';PV.state.photoMetaV16[p.id]={club:p.club,kind:'shared-base-cutout',source:PV.state.photoMetaV16[b.id]?.source||PV.state.photoMetaV15?.[b.id]?.source||'base-card',baseCardId:b.id,verifiedAt:new Date().toISOString().slice(0,10)};PV.save?.();return u;}
     return null;
   }
-  // Provider metadata can update team before the actual image does. For explicitly recent transfers,
-  // no provider image is trusted until a current-shirt cutout has been manually verified.
+  // Provider metadata can update the team before its cutout artwork does. Recent transfers
+  // therefore stay silhouettes until a current-shirt cutout has been manually verified.
   if(RECENT_TRANSFER_GUARD.has(key)){delete PV.state.photos[p.id];PV.save?.();return null;}
   const u=await oldPhotoFor?.(p);
-  if(u&&validCutout(u)){
-    PV.state.photoMetaV16[p.id]={club:p.club,kind:'provider-current-cutout',source:PV.state.photoMetaV15?.[p.id]?.source||'TheSportsDB',baseCardId:p.id,verifiedAt:PV.state.photoMetaV15?.[p.id]?.verifiedAt||new Date().toISOString().slice(0,10)};
-    PV.save?.();return u;
-  }
+  if(u&&validCutout(u)){PV.state.photoMetaV16[p.id]={club:p.club,kind:'provider-current-cutout',source:PV.state.photoMetaV15?.[p.id]?.source||'TheSportsDB',baseCardId:p.id,verifiedAt:PV.state.photoMetaV15?.[p.id]?.verifiedAt||new Date().toISOString().slice(0,10)};PV.save?.();return u;}
   return null;
 };
 
@@ -106,46 +101,31 @@ const oldClubLogoFor=PV.clubLogoFor,oldClubLogoSync=PV.clubLogoSync,oldLeagueLog
 PV.clubLogoSync=club=>PV.state.clubLogos?.[club]||oldClubLogoSync?.(club)||null;
 PV.clubLogoFor=async club=>{
   if(!club)return null;if(PV.state.clubLogos?.[club])return PV.state.clubLogos[club];
-  const inherited=await oldClubLogoFor?.(club);if(inherited){PV.state.clubLogos[club]=inherited;return inherited;}
+  const inherited=await oldClubLogoFor?.(club);if(inherited){PV.state.clubLogos[club]=inherited;PV.save?.();return inherited;}
   for(const q of teamCandidates(club)){
-    try{
-      const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=${encodeURIComponent(q)}`);if(!r.ok)continue;
-      const rows=(await r.json())?.teams||[];
-      const hit=rows.find(x=>String(x.strSport||'').toLowerCase()==='soccer'&&teamMatches(x.strTeam,club));
-      const url=hit?.strBadge||hit?.strLogo||null;
-      if(url){PV.state.clubLogos[club]=url;PV.save?.();return url;}
-    }catch{}
+    try{const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=${encodeURIComponent(q)}`);if(!r.ok)continue;const rows=(await r.json())?.teams||[];const hit=rows.find(x=>String(x.strSport||'').toLowerCase()==='soccer'&&teamMatches(x.strTeam,club));const url=hit?.strBadge||hit?.strLogo||null;if(url){PV.state.clubLogos[club]=url;PV.save?.();return url;}}catch{}
   }
   return null;
 };
 PV.leagueLogoFor=async league=>{
   if(!league)return null;if(PV.state.leagueLogos?.[league])return PV.state.leagueLogos[league];
-  const inherited=await oldLeagueLogoFor?.(league);if(inherited){PV.state.leagueLogos[league]=inherited;return inherited;}
+  const inherited=await oldLeagueLogoFor?.(league);if(inherited){PV.state.leagueLogos[league]=inherited;PV.save?.();return inherited;}
   const spec=LEAGUE_SPECS[league];if(!spec)return null;
-  try{
-    const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/search_all_leagues.php?c=${encodeURIComponent(spec.country)}&s=Soccer`);if(!r.ok)return null;
-    const rows=(await r.json())?.countries||(await r.clone?.().json?.())?.leagues||[];
-    const hit=rows.find(x=>{const s=`${x.strLeague||''} ${x.strLeagueAlternate||''}`;return spec.re.test(s)&&!(spec.avoid&&spec.avoid.test(s));});
-    const url=hit?.strBadge||hit?.strLogo||null;if(url){PV.state.leagueLogos[league]=url;PV.save?.();return url;}
-  }catch{}
+  try{const r=await fetch(`https://www.thesportsdb.com/api/v1/json/123/search_all_leagues.php?c=${encodeURIComponent(spec.country)}&s=Soccer`);if(!r.ok)return null;const j=await r.json(),rows=j?.countries||j?.leagues||[];const hit=rows.find(x=>{const s=`${x.strLeague||''} ${x.strLeagueAlternate||''}`;return spec.re.test(s)&&!(spec.avoid&&spec.avoid.test(s));});const url=hit?.strBadge||hit?.strLogo||null;if(url){PV.state.leagueLogos[league]=url;PV.save?.();return url;}}catch{}
   return null;
 };
 
-function paintPlayer(id,url){
-  if(!url)return;document.querySelectorAll(`[data-photo="${CSS.escape(id)}"]`).forEach(n=>{n.innerHTML=`<img class="pv12-player-art pv12-art-cutout pv15-player-art pv16-player-art" src="${PV.esc(url)}" alt="" loading="lazy" decoding="async">`;const img=n.querySelector('img');if(img)img.onerror=()=>{img.remove();n.innerHTML='<span class="pv13-silhouette" aria-hidden="true"><i></i><b></b></span>';};});
-}
-function paintBadge(host,url,kind,label){
-  if(!host||!url)return;let img=host.querySelector(':scope > img');if(!img){img=document.createElement('img');host.appendChild(img);}img.src=url;img.alt=label||'';img.loading='lazy';img.decoding='async';img.onload=()=>host.classList.add('pv15-has-asset','pv16-has-asset');img.onerror=()=>{img.remove();host.classList.remove('pv15-has-asset','pv16-has-asset');};if(img.complete&&img.naturalWidth)host.classList.add('pv15-has-asset','pv16-has-asset');host.dataset.assetKind=kind;
-}
+function paintPlayer(id,url){if(!url)return;document.querySelectorAll(`[data-photo="${CSS.escape(id)}"]`).forEach(n=>{n.innerHTML=`<img class="pv12-player-art pv12-art-cutout pv15-player-art pv16-player-art" src="${PV.esc(url)}" alt="" loading="lazy" decoding="async">`;const img=n.querySelector('img');if(img)img.onerror=()=>{img.remove();n.innerHTML='<span class="pv13-silhouette" aria-hidden="true"><i></i><b></b></span>';};});}
+function paintBadge(host,url,kind,label){if(!host||!url)return;let img=host.querySelector(':scope > img');if(!img){img=document.createElement('img');host.appendChild(img);}img.src=url;img.alt=label||'';img.loading='lazy';img.decoding='async';img.onload=()=>host.classList.add('pv15-has-asset','pv16-has-asset');img.onerror=()=>{img.remove();host.classList.remove('pv15-has-asset','pv16-has-asset');};if(img.complete&&img.naturalWidth)host.classList.add('pv15-has-asset','pv16-has-asset');host.dataset.assetKind=kind;}
 async function pool(items,limit,fn){let i=0;const workers=Array.from({length:Math.min(limit,items.length)},async()=>{while(i<items.length){const x=items[i++];await fn(x);}});await Promise.all(workers);}
 const oldHydrate=PV.hydrate;
 PV.hydrate=root=>{
   oldHydrate?.(root);const scope=root||document;
-  const photoIds=[...new Set([...scope.querySelectorAll?.('[data-photo]')||[]].map(n=>n.dataset.photo).filter(Boolean))];
+  const photoIds=[...new Set([...(scope.querySelectorAll?.('[data-photo]')||[])].map(n=>n.dataset.photo).filter(Boolean))];
   photoIds.forEach(async id=>{const p=PV.byId(id);if(!p)return;const u=await PV.photoFor(p);if(u)paintPlayer(id,u);});
-  const clubs=[...new Set([...scope.querySelectorAll?.('[data-club-badge]')||[]].map(n=>n.dataset.clubBadge).filter(Boolean))];
+  const clubs=[...new Set([...(scope.querySelectorAll?.('[data-club-badge]')||[])].map(n=>n.dataset.clubBadge).filter(Boolean))];
   pool(clubs,4,async club=>{const u=await PV.clubLogoFor(club);if(!u)return;document.querySelectorAll(`[data-club-badge="${CSS.escape(club)}"]`).forEach(n=>paintBadge(n,u,'club',club));});
-  const leagues=[...new Set([...scope.querySelectorAll?.('[data-league-badge]')||[]].map(n=>n.dataset.leagueBadge).filter(Boolean))];
+  const leagues=[...new Set([...(scope.querySelectorAll?.('[data-league-badge]')||[])].map(n=>n.dataset.leagueBadge).filter(Boolean))];
   pool(leagues,3,async league=>{const u=await PV.leagueLogoFor(league);if(!u)return;document.querySelectorAll(`[data-league-badge="${CSS.escape(league)}"]`).forEach(n=>paintBadge(n,u,'league',league));});
 };
 
