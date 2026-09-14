@@ -11,186 +11,176 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Production version:** `V0.13 Canonical Card Visual System — LIVE`  
-**Dev release candidate:** `V0.14 Player Integrity + Real Pool Audit — QA PASSED`  
-**Dev head at final QA:** `6ec259e9bc61531dcf7ed910914de95943f02a58`  
-**Next target after release:** `deterministic club/league badge coverage + league-by-league current-roster audit`  
+**Production version:** `V0.15 Visual Cards + Player Cutout Recovery — LIVE`  
+**V0.16 release candidate:** `Current-Shirt Art + IF Reuse + Identity Coverage — DEV QA PASSED`  
+**V0.16 final QA dev commit:** `3e7ba7b1c49b447c0313492349f626c3c54cf5b4`  
+**V0.16 full validation:** run #46 (`34829818936`) — **SUCCESS**  
+**Next target after release:** expand verified current-shirt cutouts team-by-team and close remaining deterministic club/league asset gaps  
 
 ### Branch truth
 
-`main` is still V0.13 until the V0.14 release PR is merged. `dev` contains the complete V0.14 integrity pass: PR #21 (current-club corrections + strict player-art policy + pool expansion), PR #22 (verified CE Sabadell 2026/27 roster depth) and PR #23 (Chromium smoke startup hardening). Continue future product work from `dev`, not those finished feature branches.
-
-V0.14 final dev CI is **run #37 — SUCCESS**. It passed engine regression, V0.14 integrity assertions, machine-readable asset coverage reporting, real Chromium mobile/desktop smoke, Draft 11/11 and the seven-rarity browser card matrix.
+V0.16 is complete and QA-passed on `dev`; `main` remains V0.15 until the release PR is merged. V0.16 was not accepted on the first green-looking attempt: the full audit found and fixed three separate issues before release — a historical V0.15 cache assertion that blocked legitimate later versions, five special-only IF cards without a reusable base card, and responsive rerenders that could lose the final V0.16 cutout geometry. Run #46 passed only after all three were resolved.
 
 ---
 
-## 🛡️ V0.14 PLAYER-ART LAW — DO NOT REGRESS THIS
+## 🎨 V0.16 CARD ASSET RULES
 
-The user explicitly prefers a silhouette over a wrong or badly cropped photo. V0.14 therefore changes player art from “best effort” to a strict integrity rule:
+Visual priority is now explicit:
 
-> **A player image is shown only when it is a transparent football cutout for the exact player AND their current club. Otherwise show the neutral silhouette.**
+> **Correct current-shirt transparent cutout > silhouette > stale/wrong-shirt/badly cropped image.**
 
-Consequences:
+Provider metadata alone is not enough for high-risk recent transfers because a player's team can update before the provider cutout does. Those players are guarded: if a current-shirt transparent image is not verified, the game deliberately shows a silhouette.
 
-- only `strCutout` is accepted from the runtime fallback;
-- `strThumb`, `strRender`, generic portraits and rectangular internet photos are forbidden;
-- cached art is valid only while metadata still matches the player's current club;
-- changing club invalidates the cached cutout automatically;
-- the V0.14 migration clears all previous player-photo caches;
-- legacy V11/V12 “official portrait” hydration is disabled completely;
-- therefore old rectangular CE Sabadell internet photos cannot reappear;
-- a missing PNG/cutout is an intentional **silhouette**, not an asset failure.
+### Livaković regression — fixed and visually verified
 
-`v14/assets.js` owns this policy and exposes `PV.assetCoverage()` / `PV14_ASSET_AUDIT`.
+Dominik Livaković is an FC Barcelona player in the current dataset. V0.16 pins a verified current Barça transparent cutout and purges stale/provider artwork for him. A dedicated real-Chromium test fails if his rendered URL stops being the FC Barcelona official asset, contains `Girona`, loses `object-fit: contain`, or his club stops being Barcelona.
 
----
+Human review of the final mobile screenshot confirmed Livaković in the current orange Barça goalkeeper shirt, correctly cut out inside the card, with Barça crest and league identity visible and no circular plate behind either icon.
 
-## 🔄 CURRENT-CLUB AUDIT COMPLETED IN V0.14
+### Verified current FC Barcelona cutout registry
 
-The dataset had become stale after the 2026 summer market. V0.14 explicitly corrects current-club records including:
+V0.16 currently pins eight high-confidence current transparent Barça assets:
 
-- Karim Adeyemi → FC Barcelona;
-- João Cancelo → FC Barcelona;
-- Rodri → FC Barcelona;
-- Anthony Gordon → FC Barcelona;
-- Gabriel Jesus → FC Barcelona;
-- Ferran Torres → PSG;
-- Marc Casadó → Deportivo de La Coruña;
-- Héctor Fort → Real Sociedad.
+- Dominik Livaković;
+- Joan García;
+- Karim Adeyemi;
+- Anthony Gordon;
+- Gabriel Jesus;
+- Xavi Espart;
+- Rodri;
+- João Cancelo.
 
-It also adds/updates real 2026/27 FC Barcelona squad depth such as Joan García, Szczęsny, Livaković, Balde, Koundé, Christensen, Eric García, Gerard Martín, Gavi, Fermín, Dani Olmo, Marc Bernal, Roony Bardghji and real younger squad players.
-
-This is not yet a claim that every one of the 291 base-player records has been manually current-club-verified. V0.14 creates the machinery and begins the systematic audit; future roster work must continue league-by-league instead of assuming historical data is current.
+This registry is intentionally conservative. Do not add generic portraits or old-shirt images merely to increase coverage.
 
 ---
 
-## 🔵 CE SABADELL 2026/27 AUDIT
+## ⚫ IF / TOTW ARTWORK — 11/11 BASE-CARD REUSE
 
-V0.14 cross-checks the current CE Sabadell first team and expands the club as useful bronze/silver SBC depth. Current real first-team identities added/updated include Diego Fuoli, Nil Ruiz, Genar Fornés, Carlos Garcia, Arthur Bonaldo, Ton Ripoll, David Astals, Jan Molina, Jordi Ortega, Urri, Quadri Liameed, Rodrigo Escudero, Rubén Martínez, Alan Godoy, Javi López-Pinto and Joel Priego, alongside existing current Sabadell records such as José Ortega, Carlos Alemán, Kaiser, Eneko Aguilar, Miguelete and Agustín Coscia.
+Every current IF/TOTW card now resolves to a normal base card. The special inherits the base card's current club, league, nation/search identity and uses **the exact same resolved player-image URL**. If the normal card is a silhouette, the IF is also a silhouette; no duplicate independent photo search exists.
 
-Important: **being in the verified Sabadell roster does not give a player a rectangular web photo.** If no exact current-Sabadell transparent cutout exists, the card stays as a silhouette by design.
+Five historical special-only identities were given real-player base versions so this rule can be complete rather than partial: Roberto Fernández, Yassir Zabiri, Zian Flemming, Igor Jesus and Leif Davis. Their ratings/stats are PackVerse launch estimates. Current-club metadata was reconciled where needed, including Yassir Zabiri → Racing Santander and Zian Flemming → Ipswich Town.
 
----
-
-## 📦 V0.14 PLAYER POOL / SBC DEPTH
-
-Final clean-build dataset after the audit:
-
-- **302 total cards**;
-- **291 base players**;
-- **49 bronze**;
-- **109 silver**;
-- **133 gold**;
-- **11 special/TOTW**;
-- **36 CE Sabadell cards** in the overall dataset after reconciliation of existing + current additions.
-
-V0.14 also adds real players across useful rating bands rather than padding with invented identities, including additional Barça squad members and players such as Mikel Oyarzabal, Martín Zubimendi, Moisés Caicedo, Alexander Isak, Morgan Rogers, Jarrad Branthwaite, Milos Kerkez, Ethan Nwaneri, Kobbie Mainoo, Jorrel Hato, Lewis Miley and Archie Gray.
-
-Ratings/stats remain **PackVerse launch estimates**; player identities and audited current-club assignments are the factual layer. Do not present PackVerse ratings as official EA ratings.
+Final machine audit: **11 / 11 special cards bound to a base card**.
 
 ---
 
-## 📊 ASSET COVERAGE AUDIT — CURRENT HONEST STATE
+## 🪪 CLUB / LEAGUE IDENTITY COVERAGE
 
-CI now writes `.smoke-artifacts/asset-coverage-v14.json` on every validation run. This makes asset debt measurable instead of visual guesswork.
+V0.15 removed the circular fallback discs; V0.16 expands actual asset discovery instead of decorating missing assets.
 
-Final V0.14 clean-build snapshot:
+- all visible club/league slots are eligible for hydration;
+- broader club aliases cover common current naming differences;
+- league resolvers cover 11 of the 14 league families currently represented in the dataset: LaLiga, LALIGA HYPERMOTION, Premier League, Bundesliga, Serie A, Ligue 1, Liga Portugal, Süper Lig, MLS, Scottish Premiership and Belgian Pro League;
+- a successfully loaded crest/logo suppresses fallback initials completely;
+- unresolved assets remain understated plain text — never a circle, pill or fake badge background;
+- mobile and desktop Chromium audits verify real identity slots have `border-radius: 0`, transparent background and no background image.
 
-- player static/rectangular portraits: **0 intentionally**;
-- verified cutouts at clean build: **0 intentionally** — runtime admits them only after exact player + current-club verification;
-- deterministic club badges: **21 / 60 clubs (~35%)**;
-- deterministic competition logos: **7 / 14 leagues (50%)**.
-
-This means the next P0 is very clear: **club and competition identity coverage**, especially LALIGA HYPERMOTION, then LaLiga / Premier League / Bundesliga / Serie A / Ligue 1. Do not weaken the player-photo law merely to make coverage percentages look higher.
-
----
-
-## 🎨 V0.13 CARD SYSTEM — STILL THE VISUAL BASELINE
-
-V0.13 remains the canonical visual renderer underneath V0.14:
-
-- `v13/card-ui.js` owns full `Card` + compact `FieldCard` rendering;
-- seven materials: `bronze-common`, `bronze-rare`, `silver-common`, `silver-rare`, `gold-common`, `gold-rare`, `totw`;
-- OVR/position → art → name → six horizontal stats → nation / competition / club;
-- two readable Club cards per row on phone;
-- rarity/material identity is preserved in packs, Club, XI, Draft and SBC;
-- TOTW remains black/gold and visually separate.
-
-V0.14 changes **data and asset integrity**, not the successful V0.13 card geometry.
+This is **not** a claim of 100% icon coverage. The remaining club/competition gaps are the next P0.
 
 ---
 
-## 🎯 PRODUCT RULES ALREADY DECIDED
+## 🛡️ PLAYER-ART LAW — DO NOT REGRESS
 
-- Male football only for now; women’s content comes later.
-- No Academy mode.
-- Always keep a free route: **Basic Packs → duplicates → SBC → better rewards**.
-- Draft is free: formation → 11 picks → R16 / QF / SF / Final → modest placement reward.
-- SBC/DCP currently consume duplicates only; the last copy is protected.
-- Same footballer cannot appear twice in one SBC squad.
-- Chemistry is club / nation / league inspired, max 3 per player; team chemistry is 0–100.
-- Team score max is **199 = 99 OVR + 100 chemistry**.
-- Card rarity/material must remain identical in packs, Club, XI, Draft and SBC.
-- TOTW Lab/future fictional promos are simulated PackVerse content, clearly separate from official base data.
-- **Correct silhouette > wrong player / wrong shirt / wrong club / badly cropped portrait.**
-- Visual quality and data integrity are release requirements; green tests alone are insufficient.
+- ordinary provider art requires exact player + exact current club + transparent cutout;
+- recent-transfer players can require manual current-shirt verification;
+- `strThumb`, `strRender`, generic rectangular portraits and web-photo crops are forbidden;
+- cached art is club-aware and policy-versioned;
+- CE Sabadell players without a correct transparent current-team cutout stay silhouettes;
+- every IF reuses its base-card art;
+- missing image is preferable to incorrect image.
 
 ---
 
-## 🔴 NEXT WORK, IN PRIORITY ORDER
+## 📦 CURRENT PLAYER POOL AFTER V0.16
 
-### P0 — Deterministic club / competition assets
+Machine-readable clean-build report:
 
-The coverage report shows only 21/60 clubs and 7/14 competitions are deterministic at clean build. Complete LALIGA HYPERMOTION first, especially all clubs represented by SBC fodder, then the major first divisions. Every unresolved badge should keep a readable local fallback rather than a broken image.
+- **307 total cards**;
+- **296 base-player cards**;
+- **11 special/TOTW cards**;
+- **64 clubs** represented;
+- **14 leagues** represented;
+- **8 manually verified official current Barça cutouts**;
+- **11 league resolver specs**;
+- **11 / 11 IF cards bound to base cards**.
 
-### P0 — Systematic current-roster audit
-
-Continue what V0.14 started. Audit clubs/players league-by-league with current reliable sources. Any transfer correction must update both club/league metadata and invalidate stale player art. Add tests for high-profile transfer corrections so stale clubs cannot silently return.
-
-### P1 — Expand real pool further
-
-302 cards is much healthier but still small for a long-term pack opener. Expand with **real players** in balanced bronze/silver/gold bands and enough positional coverage for SBCs. Prefer completing real squads/leagues over random isolated names.
-
-### P1 — Retire historical runtime ownership
-
-V0.13/V0.14 are canonical for cards/assets, but old `v4 → v12` layers still load for compatibility. Gradually prove and remove obsolete ownership instead of creating endless override layers.
-
-### P1 — Walkout / Draft / SBC polish
-
-Keep normal pulls fast. 85+ suspense remains `nation → position → club → OVR → card`. Draft later needs clearer generated opponents/results. SBC needs clearer live requirements, filters/groups and repeatable upgrades.
+The five added normal cards exist primarily to remove special-only identity debt and make IF image reuse correct. Ratings/stats remain PackVerse estimates, not official EA ratings.
 
 ---
 
-## 🧪 RELEASE / SMOKE RULE — MANDATORY
+## ✅ FINAL V0.16 ANALYSIS / QA SNAPSHOT
 
-Every release must pass all three layers.
+Final dev run #46 passed every layer:
 
-### 1. Engine / integrity smoke
+- legacy regression checks;
+- V0.12 systems regression;
+- V0.13 seven-material canonical card audit;
+- V0.14 player-integrity/pool audit;
+- V0.15 visual asset guarantees;
+- V0.16 current-shirt + IF/base static audit;
+- V0.14 and V0.16 machine-readable asset reports;
+- real Chromium mobile + desktop Companion smoke;
+- Draft field smoke;
+- seven-rarity browser card matrix;
+- dedicated V0.16 current-shirt / identity-slot / IF-reuse browser audit;
+- browser artifact upload.
 
-Run:
+### Human screenshot review performed after run #46
 
-- `scripts/validate-v4.mjs`;
-- `scripts/smoke-v12.mjs`;
-- `scripts/smoke-v13.mjs`;
-- `scripts/smoke-v14.mjs`;
-- `scripts/report-assets-v14.mjs`.
+Reviewed `mobile-visual-audit-v16.png`, `mobile-livakovic-v16.png`, `desktop-visual-audit-v16.png`, normal mobile/desktop Club and Draft screenshots.
 
-V0.14 smoke specifically checks current-club transfer corrections, real Barça/Sabadell pool entries, bronze/silver/gold depth, cutout-only art, no `strThumb`/`strRender`, current-club-tied caches and the silhouette-first policy.
+Observed final state:
 
-### 2. Real browser smoke
+- Livaković clearly renders the current orange FC Barcelona goalkeeper cutout; no Girona shirt remains;
+- Rodri, Joan García, Anthony Gordon, Gabriel Jesus, João Cancelo, Adeyemi and Xavi Espart render as clean transparent current Barça cutouts in the curated audit;
+- club and league icons no longer sit on circular plates;
+- player cutouts remain inside the portrait zone and do not collide with name/stats;
+- the same cutout geometry survives mobile → desktop responsive rerenders;
+- Mbappé IF and base use the same resolved player image;
+- deliberate silhouettes remain visually clean where no safe cutout exists;
+- Draft still fits 11/11 cards with readable field geometry;
+- no regression was observed in gold/silver/bronze/TOTW card material hierarchy.
 
-Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, Club filters, Draft 11/11 and desktop Companion layout. Also run the seven-rarity matrix. Browser launchers now have a longer CDP startup window and one retry because run #36 exposed a runner startup flake before the page even loaded.
+V0.16 is therefore cleared for a `dev → main` production release.
 
-### 3. Human smoke
+---
 
-Actually inspect screenshots. For asset changes, specifically look for:
+## 🧱 CARD VISUAL STACK
 
-- wrong old-team shirts;
-- rectangular/pasted portraits;
-- stale player images after a transfer;
-- empty/broken club or league identity slots;
-- silhouettes rendering cleanly when a cutout is unavailable;
-- mobile Club and Draft field readability.
+- `v13/card-ui.js` — canonical full Card + FieldCard renderer;
+- `v13/cards.css` — seven material families and core composition;
+- `v15/visuals.css` — clean identity slots and provider-cutout visual layer;
+- `v16/visuals.css` — final verified-cutout geometry and identity spacing;
+- `v16/content.js` — complete IF/base identity binding and base versions for historical special-only cards;
+- `v16/assets.js` — official current-cutout registry, recent-transfer stale-shirt guard, IF/base art reuse and broader club/league hydration.
+
+Do not introduce another competing card renderer.
+
+---
+
+## 🔴 NEXT WORK AFTER V0.16
+
+### P0 — Verified player-art coverage
+
+Expand current-shirt transparent assets team-by-team. Prioritise high-OVR/high-frequency pack cards first, then complete coherent league/club groups. Maintain a measurable list of PNG / silhouette / stale-blocked status.
+
+### P0 — Deterministic club / competition identity
+
+Close remaining club and competition logo gaps, especially LALIGA HYPERMOTION and clubs heavily represented in SBC fodder. Prefer a correct flat text fallback over a wrong crest.
+
+### P1 — Current-roster audit
+
+Continue league-by-league transfer verification; any club move must invalidate stale art.
+
+### P1 — Card presentation polish
+
+After integrity, continue per-player crop overrides, small-screen typography/spacing and rarity-specific frame/material detailing.
+
+---
+
+## 🧪 RELEASE RULE — MANDATORY
+
+Every visual release must pass engine/static, real Chromium and human screenshot review. V0.16 adds `scripts/smoke-v16.mjs`, `scripts/report-assets-v16.mjs` and `scripts/browser-visual-audit-v16.mjs`. Do not call an update stable from green unit checks alone.
 
 ---
 
@@ -206,45 +196,15 @@ Actually inspect screenshots. For asset changes, specifically look for:
 8. PR `dev → main` only when stable.
 9. Confirm Pages and share the live link.
 
-Do not make normal product commits directly to `main`.
-
----
-
-## 🧱 CURRENT STRUCTURE
-
-```text
-.
-├── index.html
-├── js/data.js
-├── v4/ ... v11/              # historical/runtime compatibility layers
-├── v12/                      # stabilized systems
-├── v13/                      # canonical card visual system
-├── v14/
-│   ├── content.js            # current-club corrections + real pool expansion
-│   └── assets.js             # cutout-only exact-current-club art law + coverage API
-├── scripts/
-│   ├── validate-v4.mjs
-│   ├── smoke-v12.mjs
-│   ├── smoke-v13.mjs
-│   ├── smoke-v14.mjs
-│   ├── report-assets-v14.mjs
-│   ├── browser-smoke-v12.mjs
-│   └── browser-card-matrix-v13.mjs
-├── .github/workflows/
-├── manifest.json
-└── sw.js
-```
-
 ---
 
 ## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
 1. Open this README on `dev` first.
-2. Inspect `main` and `dev` HEADs plus open PRs.
-3. Read **V0.14 PLAYER-ART LAW**, **ASSET COVERAGE AUDIT** and **NEXT WORK** before touching cards/assets.
-4. Never re-enable rectangular internet player photos merely to increase coverage.
-5. Continue from `dev`.
-6. Run the mandatory V0.14 integrity + browser suite before moving anything to `main`.
-7. Update this README after the next meaningful improvement.
+2. Inspect `main`, `dev`, open PRs and the newest validation run.
+3. Preserve current-shirt/silhouette law, recent-transfer guard and 11/11 IF/base reuse.
+4. Do not trust provider team metadata alone for recent-transfer artwork.
+5. Review browser screenshots before accepting card work.
+6. Update this README after every meaningful visual/asset change.
 
 **This README is the canonical handoff for PackVerse.**

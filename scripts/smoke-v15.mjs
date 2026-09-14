@@ -5,7 +5,7 @@ const js=fs.readFileSync('v15/assets.js','utf8'),css=fs.readFileSync('v15/visual
 new Function(js);
 assert(html.includes('v15/visuals.css'),'V0.15 visual CSS is not loaded');
 assert(html.includes('v15/assets.js'),'V0.15 assets resolver is not loaded');
-assert(sw.includes('packverse27-v15-visual-assets'),'PWA cache was not bumped');
+assert(/packverse27-v(?:15|1[6-9]|[2-9]\d)-/.test(sw),'PWA cache version regressed below V0.15');
 assert(sw.includes('./v15/visuals.css')&&sw.includes('./v15/assets.js'),'V0.15 files missing from PWA core');
 assert(js.includes('rawQueries(p)'),'raw canonical player-name query path missing');
 assert(js.includes('clubMatches(x.strTeam,p.club)'),'current club verification missing');
@@ -14,4 +14,5 @@ assert(!js.includes('x.strThumb')&&!js.includes('x.strRender'),'unsafe portrait/
 assert(js.includes("assetPolicyVersion!==15"),'V0.15 cache migration missing');
 assert(css.includes('.pv15-has-asset b')&&css.includes('display:none!important'),'real crest/logo does not suppress fallback text');
 assert(css.includes('border-radius:0!important')&&css.includes('background:transparent!important'),'circle/disc identity background regression');
-console.log('PackVerse V0.15 visual asset smoke OK');
+assert(css.includes(':has(>img:not([style*="display: none"]))>b'),'pre-hydration fallback layering rule missing');
+console.log('PackVerse V0.15 visual asset smoke OK · V0.15 guarantees preserved under later cache versions');
