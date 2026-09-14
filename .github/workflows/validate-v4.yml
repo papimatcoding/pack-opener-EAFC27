@@ -31,5 +31,6 @@ jobs:
         with:
           name: packverse-browser-smoke
           path: .smoke-artifacts
-          if-no-files-found: ignore
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 7
