@@ -1,388 +1,286 @@
 # PackVerse 27
 
-Mobile-first PWA de colección de fútbol inspirada en el loop de Ultimate Team / MADFUT: sobres, colección, química, Squad Builder, Draft, SBC/DCP y progresión. La intención es construir un juego propio, no clonar la interfaz o los assets de otro producto.
+Mobile-first football card-collection PWA inspired by the game loop of Ultimate Team / MADFUT: packs, collection, chemistry, Squad Builder, Draft, SBC/DCP and progression. PackVerse is its own fan project and is not affiliated with EA.
 
 **Live / GitHub Pages:** https://papimatcoding.github.io/pack-opener-EAFC27/
 
 ---
 
-## 🚦 ESTADO ACTUAL — LEER ESTO ANTES DE TOCAR EL PROYECTO
+## 🚦 CURRENT PROJECT STATE — READ THIS FIRST
 
-**Última auditoría:** 2026-09-14  
-**Branch desplegada:** `main`  
-**HEAD de `main` en la auditoría:** `ba64c84` (`chore(v0.12): bump PWA cache`)  
-**Estado real:** V0.12 **parcial** en producción, no V0.12 completa.
+**Last handoff update:** 2026-09-14  
+**Production branch:** `main`  
+**Integration branch:** `dev`  
+**Current work:** `V0.12 Stabilization`  
 
-### Importante: qué pasó con V0.12
+### Branch truth
 
-No existe actualmente una rama `dev` en el repositorio.
+`main` is the deployed GitHub Pages source. It currently contains a **partial V0.12** that was committed directly during an earlier session.
 
-La rama `main` recibió directamente varios commits V0.12 centrados en **assets, cartas, estilos e invalidación de caché**, por lo que el live ya enseña parte del polish de V0.12.
+`dev` is now the canonical integration branch. It was created from the latest `main` and then reconciled with the useful work from the old `v0.12-madfut-draft-smoke` branch.
 
-La implementación V0.12 más completa sigue en:
+The old PR `#10` / branch `v0.12-madfut-draft-smoke` is now considered a **source branch / historical implementation**, not the branch that should be merged blindly. Its useful files have been selectively integrated into `dev`.
 
-- branch: `v0.12-madfut-draft-smoke`
-- PR: `#10 PackVerse 27 v0.12 — MADFUT polish, Draft Cup, deep bronze pool & QA smoke`
-- estado del PR en esta auditoría: **OPEN**
-- la rama y `main` han divergido; **NO hacer merge ciego**.
+### What V0.12 Stabilization on `dev` currently contains
 
-La rama V0.12 completa contiene trabajo que el `main` actual no carga todavía: expansión del pool de bronces, Free Pack progression, Club 84+/especiales, Draft Cup de 4 rondas, pacing de walkout nuevo, `smoke-v12.mjs`, `browser-smoke-v12.mjs`, `v12/content.js`, `v12/game.js`, `v12/runtime.js` y `v12/portraits.css`.
+- full V0.12 content layer and deeper real male bronze pool;
+- explicit Club `All / Specials / 84+ / Gold / Silver / Bronze` filters;
+- free Basic Pack progression;
+- slower 85+ walkout implementation;
+- Draft Cup flow with four knockout rounds;
+- manual SBC systems and existing duplicate-only rules;
+- strict player-photo resolver: official first, otherwise exact player + current club + football cutout only;
+- separate portrait treatment for official rectangular photos vs transparent cutouts;
+- V0.12 card / Draft / Club styles;
+- Node integration smoke;
+- real Chromium smoke at mobile + desktop Companion sizes;
+- screenshots generated on CI for mandatory human review.
 
-El `main` actual solo carga de V0.12:
+### Latest QA snapshot on `dev`
 
-- `v12/assets.js`
-- `v12/styles.css`
+Automated smoke passed on 2026-09-14:
 
-Por tanto, **no asumir que todo lo descrito en el PR #10 está en producción**.
+- **262 cards** loaded;
+- **39 bronze cards**;
+- Basic Pack simulated hundreds of times with **~81.7% bronze**;
+- all advertised pack item counts validated;
+- no duplicate card inside a normal reward pack;
+- Club `Specials` and `84+` visibility validated;
+- six formations / chemistry / `/199` limits validated;
+- Draft Cup curve + rewards validated;
+- bronze duplicate bank + starter SBC feasibility validated;
+- Chromium mobile `390×844` passed;
+- Chromium desktop `1440×900` passed;
+- Draft rendered **11/11** cards without vertical overflow;
+- card geometry showed positive gaps between photo → name → stats → identity row;
+- no browser runtime exceptions.
 
-### Siguiente movimiento correcto
+### Latest human smoke
 
-Antes de añadir features grandes:
+Screenshots from the Chromium run were manually reviewed.
 
-1. reconciliar los 4 commits directos que existen en `main` con la rama `v0.12-madfut-draft-smoke`;
-2. conservar lo mejor de ambos lados, no sobrescribir uno con el otro;
-3. ejecutar smoke de motor + Chromium + revisión humana;
-4. solo entonces cerrar V0.12 y plantear una rama de integración estable (`dev`) o iniciar V0.13.
+Good:
 
----
+- mobile shell is stable and readable;
+- desktop Companion layout is stable and uses the width correctly;
+- Draft field no longer has the original broken mini-card layout;
+- rarity/material is preserved on field cards;
+- Club filters render correctly;
+- no obvious photo/name/stat overlap in the smoke fixtures.
 
-## 🎯 DIRECCIÓN DE PRODUCTO
+Still weak / next target:
 
-PackVerse debe sentirse como un juego de colección de fútbol que apetece abrir cada día: abrir sobres, completar colección, usar duplicados en SBC, montar XI, hacer Draft y progresar. El aprendizaje de cartas ocurre **jugando**, no mediante un modo Academy.
+- **player art and identity assets are the weakest user-facing area**;
+- too many silhouettes for important players;
+- some available photos still have inconsistent crop / scale;
+- club badges and competition logos need deterministic verified coverage instead of runtime guesswork;
+- card identity row is still visually less polished than the rest of the app.
 
-### Decisiones de producto ya tomadas
-
-- De momento, **solo fútbol masculino**. La liga femenina llegará más adelante.
-- Academy no forma parte del flujo vivo.
-- Debe haber una ruta de progreso **gratis**: Basic Packs gratuitos → duplicados → SBC → mejores sobres.
-- Los Draft son **gratis**.
-- El Draft objetivo es un pequeño torneo de 4 rondas contra rivales progresivamente más duros; el puesto define una recompensa moderada.
-- Los SBC/DCP son manuales y solo pueden consumir **duplicados**.
-- La última copia de una carta nunca se consume en SBC.
-- El mismo futbolista no puede aparecer dos veces en la misma plantilla SBC aunque existan varias copias repetidas.
-- Química inspirada en FUT moderno: club / nación / liga, hasta 3 puntos por jugador.
-- Química global normalizada a 0–100.
-- Valoración máxima de plantilla: **199 = 99 GRL + 100 química**.
-- Las cartas dentro de XI, Draft y SBC deben conservar exactamente su material/rareza real: un bronce no puede verse plata, un TOTW debe seguir siendo TOTW, etc.
-- TOTW Lab es contenido simulado de PackVerse. Para jugadores ya altos, el primer IF suele plantearse como +1 GRL; jugadores bajos pueden recibir un salto inicial mayor.
-- Odds, precios y especiales simulados deben quedar claramente separados de los datos oficiales de EA.
-
----
-
-## ✅ LO QUE YA FUNCIONA BIEN / BASE ESTABLE
-
-- PWA mobile-first con GitHub Pages.
-- Vista desktop tipo Companion añadida a partir de V0.11.
-- Navegación principal clara: Inicio / Packs / Club / XI / Más.
-- Colección persistente en `localStorage`.
-- Duplicados y economía conectados al inventario.
-- Basic Pack gratuito.
-- Daily / Premium / packs de recompensa con odds separadas.
-- Squad Builder con varias formaciones.
-- Química y valoración /199.
-- SBC manual con duplicados y protección de última copia.
-- Regla anti-mismo-jugador en SBC.
-- Draft base funcional.
-- Distinción de materiales: bronce/plata/oro común y premium + TOTW.
-- Mobile es actualmente la presentación más sólida del producto.
+**NEXT UPDATE SHOULD ATTACK ASSETS / PLAYER PHOTOS FIRST. Do not add a new game mode before this improves.**
 
 ---
 
-## 🚨 PROBLEMAS PRINCIPALES ACTUALES
+## 🎯 PRODUCT RULES ALREADY DECIDED
 
-### P0 — Integridad de datos y assets
+- Male football only for now; women’s content comes later.
+- No Academy mode. The user learns cards by playing.
+- There must always be a free progression route: **Basic Packs → duplicates → SBC → better rewards**.
+- Draft is free.
+- Draft target loop: formation → 11 picks → Round of 16 / QF / SF / Final → modest placement-based reward.
+- SBC/DCP are manually built and currently consume **duplicates only**.
+- The last copy of a card is protected.
+- The same footballer cannot appear twice in one SBC squad, even if the club owns many copies.
+- Chemistry is inspired by modern FUT: club / nation / league, maximum 3 chemistry per player.
+- Team chemistry is normalized to **0–100**.
+- Team score maximum is **199 = 99 OVR + 100 chemistry**.
+- Card rarity/material must remain identical in Club, XI, Draft and SBC.
+- TOTW Lab and future fictional promos are PackVerse simulated content, clearly separated from official base data.
+- High-rated repeat TOTW cards normally receive restrained OVR growth; low-rated first IFs may jump more.
+- A correct silhouette is always preferable to a wrong player shirt / wrong identity image.
 
-Este es el mayor problema del producto ahora mismo.
+---
 
-Todavía pueden aparecer:
+## 🔴 CURRENT WEAKNESSES, IN PRIORITY ORDER
 
-- jugadores con foto/camiseta que no corresponde al club de la carta;
-- escudos de equipos homónimos o incorrectos;
-- logos de liga ausentes;
-- imágenes de jugador con recortes inconsistentes;
-- siluetas donde debería existir una imagen verificable;
-- assets remotos que dependen demasiado de matching flexible.
+### P0 — Player photos / asset integrity
 
-**Regla de oro:** es preferible una silueta correcta que una foto equivocada.
+Goal: every visible identity asset is either **verified and correct** or intentionally neutral.
 
-El resolver actual de `main` sigue siendo demasiado permisivo: si no encuentra un match exacto de nombre, puede terminar aceptando otro jugador del mismo equipo, y además acepta `strThumb`, que produce recortes visualmente muy dispares. Esto debe endurecerse.
+Required direction:
 
-### P0 — Cartas: falta una implementación canónica
+1. canonical player / club / competition IDs;
+2. verified player photo table;
+3. verified badge / competition-logo table;
+4. external search becomes a development helper, not the final authority shown to users;
+5. exact player + current club for any remote fallback;
+6. no `strThumb`-style inconsistent generic portraits;
+7. standardized crop profiles: `officialPortrait`, `cutout`, `silhouette`;
+8. optional per-player crop override only for true outliers;
+9. asset coverage report: photos %, badges %, league logos %, flags %.
 
-El aspecto ha mejorado mucho, pero técnicamente seguimos acumulando overrides de `v4` → `v12`. El resultado es difícil de razonar y pequeñas reglas antiguas pueden reaparecer en Club, XI, Draft o SBC.
+### P0 — Canonical card component
 
-Objetivo de la próxima gran pasada:
+The app still contains historical CSS/JS layers from `v4` through `v12`. That was useful for speed but creates visual regressions.
 
-- **una única geometría de carta**;
-- una única geometría de field-card;
-- slots fijos para GRL/posición, jugador, nombre, 6 stats, país, competición y club;
-- mismos materiales en todas las pantallas;
-- proporciones escalables por container units;
-- ninguna vista debe tener su propia interpretación visual de una rareza.
+Target after the asset pass:
 
-### P0 — Fotos de jugadores
+- one canonical full `Card` geometry;
+- one canonical `FieldCard` geometry;
+- one source of truth for rarity materials;
+- fixed zones for OVR/position, player art, name, six stats, nation, competition and club;
+- identical rarity in packs / Club / XI / Draft / SBC;
+- gradually retire old overrides instead of adding endless new patch layers.
 
-Es la pieza que más hace que PackVerse se sienta producto real o prototipo.
+### P1 — Walkout / pack opening
 
-Política deseada:
+Normal pulls should remain fast but still have a short physical pack animation.
 
-1. foto oficial / asset verificado del club o proveedor fiable;
-2. si no existe, cutout solo con **nombre exacto + club actual exacto/verificado**;
-3. nunca aceptar una foto solo porque el futbolista o el equipo “se parecen”;
-4. nunca usar una camiseta antigua si la carta representa al club actual;
-5. si no pasa la verificación → silueta;
-6. distinguir en CSS entre foto rectangular oficial y cutout transparente para normalizar ambos a un busto similar.
+85+ should use deliberate suspense:
 
-### P1 — Logos de club, liga y banderas
+`nation → position → club → OVR → card`
 
-Hace falta una tabla canónica de identidad por club/competición/nación. No depender únicamente de búsquedas remotas cada vez que se pinta una carta.
+Target feel:
 
-Objetivo:
+- 85–86: ~5–6s;
+- 87–89: ~6.5–8s;
+- 90+: ~8–10s;
+- strong special: ~9–11s;
+- skip locked for the opening section;
+- no cheesy copy / beeps / unnecessary text.
 
-- pin de logos oficiales/validados para equipos y ligas prioritarias;
-- aliases controlados;
-- validación de deporte + país + liga para cualquier fallback externo;
-- flags siempre con el mismo wrapper SVG y mismas proporciones;
-- fallback visual neutro, nunca un logo incorrecto.
+### P1 — Player pool
 
-### P1 — Walkout / opening
+Expand systematically, not randomly:
 
-El opening normal puede ser rápido, pero debe existir una pequeña animación de pack para que abrir incluso basura tenga feedback.
-
-Para 85+/86+ el walkout debe ser bastante más elegante y deliberado:
-
-- oscuridad / escenario sobrio;
-- reveal progresivo;
-- bandera → posición → club → GRL → carta;
-- pausas reales que permitan reconocer la información;
-- 87+, 90+ y especiales escalan el suspense;
-- bloqueo de skip al principio;
-- nada de textos/beeps cursis;
-- debe sentirse premium, no lento porque sí.
-
-### P1 — Club
-
-Hay que garantizar en browser real:
-
-- `Todos` nunca oculta cartas;
-- `Especiales` muestra todos los especiales;
-- `84+` muestra todo 84+;
-- filtros de posición/liga/rareza/duplicados combinables;
-- grids y scroll sin recortes;
-- cards iguales a las del resto del juego.
-
-El bug reportado de no ver especiales/84+ está resuelto en la rama V0.12 completa, pero **no se debe dar por arreglado en `main` hasta reconciliarla**.
-
-### P1 — Draft
-
-El Draft base existe, pero el objetivo final es:
-
-1. elegir formación;
-2. 5 candidatos por posición;
-3. completar XI;
-4. mostrar el mismo diseño de field-card que Mi XI;
-5. simular OCTAVOS → CUARTOS → SEMIFINAL → FINAL;
-6. rival progresivamente más duro;
-7. probabilidad basada en GRL + química;
-8. recompensa según victorias, sin romper la economía.
-
-La rama V0.12 ya contiene una primera implementación y smoke de este loop; aún no está reconciliada con producción.
-
-### P1 — Pool de jugadores
-
-Necesitamos mucha más profundidad real.
-
-Prioridad de expansión:
-
-1. terminar bien **LALIGA HYPERMOTION**;
-2. LaLiga;
+1. complete **LALIGA HYPERMOTION** properly;
+2. complete LaLiga;
 3. Premier League;
 4. Bundesliga / Serie A / Ligue 1;
-5. resto de ligas masculinas relevantes.
+5. other relevant men’s leagues.
 
-Además hacen falta suficientes bronces reales por posición para que el camino Basic Pack → SBC de bronce sea viable.
+Enough real bronzes by position must always exist for bronze SBC progression.
 
-El dataset de producción anterior a la expansión completa rondaba 223 cartas masculinas y 119 HYPERMOTION; la rama V0.12 completa ya expande esto y añade más bronces, pero todavía no está integrada con `main`.
+### P1 — Draft polish
 
-### P2 — SBC/DCP
+The V0.12 mechanics exist. Future polish should show generated opponent squads, match score/result presentation and clearer tournament progression without inflating rewards.
 
-La base manual está bien. Próxima capa:
+### P1 — SBC polish
 
-- UX más parecida a construir una plantilla real;
-- requisitos muy visibles;
-- feedback al cumplir cada requisito;
-- grupos de desafíos;
-- SBC de mejora repetibles;
-- SBC de jugadores/promos en el futuro;
-- streamlined SBC para upgrades simples como sistema secundario, no sustituto del builder clásico.
+Manual builder is the core. Future improvements: clearer live requirements, filters, groups, repeatable upgrades and player/promotional SBCs.
 
 ---
 
-## 🧱 DEUDA TÉCNICA QUE NO DEBEMOS SEGUIR ACUMULANDO
+## 🧪 RELEASE / SMOKE RULE — MANDATORY
 
-El proyecto nació iterando muy rápido y actualmente `index.html` carga capas sucesivas (`v4`, `v5`, `v6`… `v12`) que parchean funciones y estilos anteriores.
+No version is considered finished because it “compiles”.
 
-Eso ha sido útil para prototipar, pero ya empieza a producir efectos secundarios:
+Every release must pass:
 
-- resolvers viejos y nuevos se envuelven entre sí;
-- CSS antiguo puede volver a ganar por especificidad/cascade;
-- una vista puede seguir usando una clase antigua aunque otra ya use la nueva;
-- es difícil saber cuál es la implementación canónica de card / asset / draft.
+### 1. AI / engine smoke
 
-**Antes de seguir metiendo modos grandes**, conviene que V0.13 sea parcialmente una versión de consolidación:
+- load all runtime files;
+- dataset IDs / card metadata;
+- pack simulations and odds sanity;
+- no same card twice inside a normal pack;
+- Club filters including special + 84+;
+- XI / formations / chemistry / 199 cap;
+- Draft Cup opponent curve and realistic rewards;
+- SBC duplicate rules and starter-SBC feasibility;
+- asset-policy regression checks.
 
-- `data/` para jugadores, clubes, ligas, packs y promos;
-- `core/` para estado/economía/química;
-- `components/` para Card, FieldCard, Badge, Flag, Pack;
-- `features/` para Club, Squad, Draft, SBC;
-- un único asset resolver;
-- una única hoja de estilos por componente.
+### 2. Real browser smoke
 
-No hace falta migrar a React todavía; la app puede seguir en vanilla JS mientras la arquitectura sea clara.
+Run Chromium on at least:
 
----
+- mobile `390×844`;
+- desktop `1440×900`.
 
-## 🧪 REGLA DE RELEASE — SMOKE IA + HUMANO OBLIGATORIO
+Check:
 
-Una release no se considera terminada solo porque compile.
+- JS runtime exceptions;
+- horizontal/vertical overflow;
+- card bounding boxes;
+- photo/name/stats/id-row overlap;
+- Club special / 84+ UI;
+- Draft 11/11 field cards;
+- desktop sidebar / Companion layout.
 
-### 1. Smoke de motor / IA
+CI stores screenshots as `packverse-browser-smoke` workflow artifacts.
 
-Debe validar como mínimo:
+### 3. Human smoke
 
-- sintaxis de todo el runtime;
-- IDs únicos y metadata completa;
-- todos los tipos de carta;
-- cientos de Basic Packs;
-- todos los otros packs repetidamente;
-- nunca repetir la misma carta dos veces dentro del mismo pack salvo una regla explícita;
-- distribución razonable de bronces;
-- Club: All / Especial / 84+;
-- las 6+ formaciones;
-- química ≤100, GRL ≤99 y total ≤199;
-- Draft completo + derrota temprana;
-- dificultad progresiva y rewards acotadas;
-- SBC inicial matemáticamente viable;
-- última copia protegida;
-- un futbolista máximo una vez por SBC;
-- asset/card regression tests.
+The screenshots must actually be inspected. Review at minimum:
 
-### 2. Smoke de Chromium real
+- bronze common / bronze rare;
+- silver common / silver rare;
+- gold common / gold rare;
+- TOTW;
+- verified portrait;
+- transparent cutout;
+- silhouette fallback;
+- mobile Club;
+- desktop Club;
+- Draft field;
+- any visually changed screen in the release.
 
-Debe ejecutarse en al menos:
-
-- móvil ~390×844;
-- desktop Companion ~1440×900.
-
-Comprobar físicamente:
-
-- foto no pisa nombre;
-- nombre no pisa stats;
-- stats no pisan identidad;
-- no hay overflow horizontal;
-- Club renderiza especiales y 84+;
-- XI/Draft muestran 11 cartas con la rareza correcta;
-- desktop usa sidebar y no layout de móvil estirado;
-- cero excepciones JS.
-
-Guardar screenshots del smoke como artifacts del workflow para auditoría humana.
-
-**Nota:** `scripts/browser-smoke-v12.mjs` ya existe en la rama V0.12, pero todavía no está conectado al workflow de esa rama ni integrado en `main`.
-
-### 3. Revisión humana
-
-Antes del merge revisar manualmente como mínimo:
-
-- 1 bronce común;
-- 1 bronce premium;
-- 1 plata;
-- 1 oro;
-- 1 TOTW;
-- 1 carta con foto oficial rectangular;
-- 1 carta con cutout transparente;
-- 1 carta con silueta;
-- Club móvil + desktop;
-- XI;
-- Draft;
-- SBC;
-- Basic Pack;
-- pack con walkout;
-- scroll / safe area / clicks / selección de jugadores.
-
-Solo después: merge → esperar Pages → abrir URL pública → smoke corto de producción.
+If a screenshot looks wrong, green tests are not enough.
 
 ---
 
-## 🌿 ESTRATEGIA DE BRANCHES RECOMENDADA
+## 🌿 BRANCH WORKFLOW
 
-Estado actual: **no existe `dev` todavía**.
+Use this unless there is a specific reason not to:
 
-Cuando se reconcilie V0.12:
+1. `main` = stable, deployed Pages.
+2. `dev` = integration branch and current project state.
+3. Larger changes may use `feat/...` or `fix/...` branches from `dev`.
+4. Merge work into `dev` first.
+5. Run AI + Chromium + human smoke.
+6. Update this README handoff.
+7. PR `dev → main` only when the update is considered stable.
+8. Confirm Pages after merge and share the live link.
 
-- `main` = versión estable que publica GitHub Pages;
-- `dev` = integración de la próxima release;
-- `feature/...` = cambios aislados;
-- PR a `dev` para features grandes;
-- PR `dev` → `main` solo después del smoke completo.
-
-No crear/mover `dev` hasta resolver la divergencia actual entre `main` y `v0.12-madfut-draft-smoke`.
-
----
-
-## 🧭 HANDOFF PARA OTRO CHAT / OTRA SESIÓN
-
-Si se retoma PackVerse desde un chat nuevo:
-
-1. **Leer este README completo.**
-2. Consultar las ramas y los últimos commits reales de GitHub; no confiar solo en memoria de conversación.
-3. Comprobar `main`, `v0.12-madfut-draft-smoke` y PR #10 antes de programar.
-4. No asumir que “V0.12” significa lo mismo en live y en la rama V0.12 mientras el PR siga abierto.
-5. Mantener las decisiones de producto de este README.
-6. Antes de cada release: smoke IA + Chromium + humano.
-7. Tras cada actualización desplegada, pasar siempre al usuario el enlace de Pages.
-8. Actualizar esta sección `ESTADO ACTUAL` y `Siguiente movimiento correcto` cuando cambie la versión/branch/PR.
-
-**Siguiente tarea recomendada en este momento:** reconciliar V0.12 completa con los commits V0.12 que entraron directamente en `main`, y convertir esa reconciliación en una base estable antes de seguir ampliando contenido.
+Do **not** make direct product commits to `main` during normal development.
 
 ---
 
-## 📁 ARQUITECTURA ACTUAL
-
-La arquitectura real todavía es incremental:
+## 🧱 CURRENT STRUCTURE
 
 ```text
 .
 ├── index.html
 ├── js/data.js
-├── v4/ … v12/             # capas históricas de features / overrides
+├── v4/ ... v11/          # historical/runtime layers
+├── v12/
+│   ├── assets.js         # strict player art policy
+│   ├── content.js        # V0.12 content + bronze progression
+│   ├── game.js           # Club, packs, Draft Cup, V0.12 flows
+│   ├── portraits.css     # portrait/cutout normalization
+│   ├── runtime.js        # deterministic/testable runtime helpers
+│   └── styles.css        # V0.12 visual layer
 ├── scripts/
 │   ├── validate-v4.mjs
-│   └── (en la rama V0.12) smoke-v12.mjs + browser-smoke-v12.mjs
-├── assets/
+│   ├── smoke-v12.mjs
+│   └── browser-smoke-v12.mjs
+├── .github/workflows/
 ├── manifest.json
-├── sw.js
-└── .github/workflows/
+└── sw.js
 ```
 
-Esto debe consolidarse gradualmente en lugar de seguir creando capas infinitas.
+Long-term technical direction: keep vanilla JS/PWA for now, but move toward clear `data/`, `core/`, `components/` and `features/` ownership instead of indefinitely adding versioned override layers.
 
 ---
 
-## 📌 CONTENIDO Y FUENTES
+## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
-PackVerse no está afiliado a EA.
+If context is lost, do this before making changes:
 
-- Ratings base: cuando se indica que son oficiales, deben venir de la base oficial vigente de EA FC 27.
-- TOTW Lab / promos inventadas / odds / precios: simulados por PackVerse.
-- Assets de jugador/club/liga: priorizar fuentes oficiales o coincidencias verificadas; no sacrificar exactitud por “tener una foto”.
-- Si un asset no es fiable, usar fallback neutro.
+1. open this README on `dev`;
+2. inspect `main` and `dev` HEADs;
+3. inspect open PRs;
+4. read the **CURRENT PROJECT STATE** and **NEXT UPDATE** above;
+5. do not assume an old V0.x branch is production;
+6. make changes from `dev`;
+7. run the mandatory smoke before merging anything to `main`.
 
----
-
-## ▶️ LOCAL
-
-```bash
-python run_local_server.py
-```
-
-Abrir `http://127.0.0.1:8080`.
+This README is the canonical handoff for PackVerse.
