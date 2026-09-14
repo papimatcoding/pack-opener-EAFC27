@@ -11,17 +11,18 @@ Mobile-first football card-collection PWA inspired by the game loop of Ultimate 
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Current work:** `V0.12 Stabilization`  
+**Production version:** `V0.12 Stabilized`  
+**Next update target:** `player photos + club/competition assets`  
 
 ### Branch truth
 
-`main` is the deployed GitHub Pages source. It currently contains a **partial V0.12** that was committed directly during an earlier session.
+`main` is the stable branch deployed to GitHub Pages. **V0.12 Stabilization is now merged and live** through PR `#11`.
 
-`dev` is now the canonical integration branch. It was created from the latest `main` and then reconciled with the useful work from the old `v0.12-madfut-draft-smoke` branch.
+`dev` is the canonical integration branch for future work. New product changes should land on `dev` first, pass QA there, and only then move to `main`.
 
-The old PR `#10` / branch `v0.12-madfut-draft-smoke` is now considered a **source branch / historical implementation**, not the branch that should be merged blindly. Its useful files have been selectively integrated into `dev`.
+The old branch `v0.12-madfut-draft-smoke` and closed PR `#10` are historical/source work only. Do not merge them. Their useful pieces were selectively reconciled into `dev` before V0.12 Stabilization was merged.
 
-### What V0.12 Stabilization on `dev` currently contains
+### What V0.12 Stabilized contains
 
 - full V0.12 content layer and deeper real male bronze pool;
 - explicit Club `All / Specials / 84+ / Gold / Silver / Bronze` filters;
@@ -36,7 +37,7 @@ The old PR `#10` / branch `v0.12-madfut-draft-smoke` is now considered a **sourc
 - real Chromium smoke at mobile + desktop Companion sizes;
 - screenshots generated on CI for mandatory human review.
 
-### Latest QA snapshot on `dev`
+### Latest QA snapshot
 
 Automated smoke passed on 2026-09-14:
 
