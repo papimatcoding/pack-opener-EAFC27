@@ -3,8 +3,8 @@
 const PV=window.PV4,D=PV?.D;if(!PV||!D)return;
 
 // V0.18: deterministic Spanish club identity. Entries are pinned only where the
-// football-data crest identity was verified in current feeds or archived API payloads.
-// Explicit URL entries also support provider SVG assets when PNG is unavailable.
+// football-data crest identity was verified AND the asset is usable by the game.
+// Historical references that no longer load stay unresolved rather than showing broken art.
 const CLUB_ASSETS_V18={
   'CE Sabadell FC':'https://crests.football-data.org/8921.png',
   'Racing Santander':'https://crests.football-data.org/5335.png',
@@ -29,11 +29,12 @@ const CLUB_ASSETS_V18={
   'FC Andorra':'https://crests.football-data.org/andorra.svg',
   'UD Almería':'https://crests.football-data.org/267.png',
   'Cádiz CF':'https://crests.football-data.org/264.png',
-  'Córdoba CF':'https://crests.football-data.org/259.svg',
   'Sporting Gijón':'https://crests.football-data.org/96.png'
 };
 
 PV.state.clubLogos=PV.state.clubLogos||{};
+// Purge the known dead V0.18 Córdoba mapping if a pre-release build cached it.
+if(/^https:\/\/crests\.football-data\.org\/259\.(?:png|svg)$/.test(PV.state.clubLogos['Córdoba CF']||''))delete PV.state.clubLogos['Córdoba CF'];
 Object.entries(CLUB_ASSETS_V18).forEach(([club,url])=>PV.state.clubLogos[club]=url);
 const oldSync=PV.clubLogoSync,oldFor=PV.clubLogoFor;
 PV.clubLogoSync=club=>CLUB_ASSETS_V18[club]||oldSync?.(club)||PV.state.clubLogos?.[club]||null;
@@ -44,7 +45,7 @@ PV.assetCoverage18=()=>{
   const deterministic=clubs.filter(c=>/^https:\/\/crests\.football-data\.org\//.test(PV.clubLogoSync?.(c)||PV.state.clubLogos?.[c]||''));
   const spanish=clubs.filter(c=>base.some(p=>p.club===c&&['LaLiga EA Sports','LALIGA EA SPORTS','LALIGA HYPERMOTION'].includes(p.league)));
   const deterministicSpanish=spanish.filter(c=>deterministic.includes(c));
-  return{version:18,totalClubs:clubs.length,deterministicClubs:deterministic.length,deterministicPct:clubs.length?Math.round(deterministic.length/clubs.length*1000)/10:0,spanishClubs:spanish.length,deterministicSpanish:deterministicSpanish.length,spanishPct:spanish.length?Math.round(deterministicSpanish.length/spanish.length*1000)/10:0,remainingSpanish:spanish.filter(c=>!deterministicSpanish.includes(c)),policy:'verified deterministic crest URL or quiet fallback; never guessed identity'};
+  return{version:18,totalClubs:clubs.length,deterministicClubs:deterministic.length,deterministicPct:clubs.length?Math.round(deterministic.length/clubs.length*1000)/10:0,spanishClubs:spanish.length,deterministicSpanish:deterministicSpanish.length,spanishPct:spanish.length?Math.round(deterministicSpanish.length/spanish.length*1000)/10:0,remainingSpanish:spanish.filter(c=>!deterministicSpanish.includes(c)),policy:'verified and loadable deterministic crest URL or quiet fallback; never guessed identity'};
 };
 window.PV18_IDENTITY_AUDIT={version:18,spanishDeterministicAssets:CLUB_ASSETS_V18,coverage:PV.assetCoverage18};
 PV.save?.();
