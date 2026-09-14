@@ -9,19 +9,19 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 ## 🚦 CURRENT PROJECT STATE — READ THIS FIRST
 
 **Last handoff update:** 2026-09-14  
-**Production:** `V0.16 Current-Shirt Cards + IF/Base Art Reuse — LIVE`  
-**Production commit:** `4d772a092b74d534643e7c44b6cb474121f6f053`  
+**Production:** `V0.17 Asset Persistence + Lazy Player Hydration + Deterministic Crest Expansion — LIVE`  
+**Production commit:** `43f289f054321aec2f120f96d7da732309016443`  
+**Release PR:** `#46` — merged  
+**Production validation:** run #57 (`34885544112`) — **SUCCESS**  
+**GitHub Pages deploy:** run #25 (`34885637265`) — **SUCCESS**  
 **Integration branch:** `dev`  
-**V0.17 candidate:** `Asset Persistence + Lazy Player Hydration + Deterministic Crest Expansion`  
-**V0.17 final dev commit:** `ca4e50d6845c3846f0f386a3d715e599a657f920`  
-**V0.17 full validation:** run #55 (`34885190213`) — **SUCCESS**  
-**Release state:** V0.17 is QA-cleared on `dev`; next step is `dev → main`, production validation and Pages confirmation.
+**Next P0:** deterministic Spanish club/competition coverage, then verified current-shirt player-art expansion.
 
 ### Why V0.17 exists
 
 The missing-image problem was not only a coverage issue. Several historical asset layers used exact-version migration guards, so newer saved versions could make old code wipe valid photos again during reload. The full audit found this pattern in V9/V10/V11/V12/V14/V15.
 
-V0.17 makes the complete legacy migration chain monotonic. A newer cache/policy version can no longer trigger an older destructive migration. Run #55 proves a verified current-club cutout survives a real Chromium full reload.
+V0.17 makes the complete legacy migration chain monotonic. A newer cache/policy version can no longer trigger an older destructive migration. Run #55 proved a verified current-club cutout survives a real Chromium full reload; production run #57 repeated the full suite successfully.
 
 ---
 
@@ -40,7 +40,7 @@ V16's final hydrator could trigger a large whole-Club request burst. `v17/assets
 
 ### Deterministic crest expansion
 
-The machine report now records **24 / 64 clubs with deterministic crest mappings (37.5%)**. V0.17 adds verified football-data IDs for Aston Villa, Everton, Burnley, Brentford, Brighton, Crystal Palace, West Ham, Wolverhampton and Leeds United on top of the existing core registry.
+The machine report records **24 / 64 clubs with deterministic crest mappings (37.5%)**. V0.17 adds verified football-data IDs for Aston Villa, Everton, Burnley, Brentford, Brighton, Crystal Palace, West Ham, Wolverhampton and Leeds United on top of the existing core registry.
 
 This is deliberately not claimed as complete. The report lists 40 remaining deterministic club gaps; Spanish / LALIGA HYPERMOTION identities are the next P0.
 
@@ -75,9 +75,9 @@ Ratings/stats are PackVerse launch estimates, not official EA ratings.
 
 ---
 
-## ✅ V0.17 FINAL QA — PASSED ON DEV
+## ✅ V0.17 QA — LIVE
 
-Run #55 passed every validation layer:
+Dev run #55 and production PR run #57 both passed every validation layer:
 
 - legacy regression checks;
 - V0.12 systems regression;
@@ -108,7 +108,7 @@ Observed:
 - the persistence sentinel remains present after full reload with its current-club metadata intact;
 - no regression was seen in Draft geometry or desktop Club rendering.
 
-V0.17 is therefore cleared for a production release.
+GitHub Pages run #25 succeeded after the production merge. V0.17 is live.
 
 ---
 
@@ -158,6 +158,6 @@ Any transfer must invalidate stale art. After integrity, continue per-player cro
 
 ## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
-Open this README on `dev`, inspect `main`, `dev`, open PRs and latest Actions. Preserve the full monotonic migration chain, viewport-lazy lookup, current-shirt/silhouette law, recent-transfer guard, no-circle identity rule and 11/11 IF/base reuse. V0.17 passed dev run #55; if it is not yet on `main`, the next action is production release validation rather than more feature work.
+Open this README on `dev`, inspect `main`, `dev`, open PRs and latest Actions. Preserve the full monotonic migration chain, viewport-lazy lookup, current-shirt/silhouette law, recent-transfer guard, no-circle identity rule and 11/11 IF/base reuse. V0.17 is live; the next work is deterministic Spanish identity coverage, followed by verified player-art expansion.
 
 **This README is the canonical PackVerse handoff.**
