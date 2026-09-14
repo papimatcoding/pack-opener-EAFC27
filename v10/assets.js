@@ -16,7 +16,8 @@ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLo
 const oldClubLogoFor=PV.clubLogoFor;
 const oldClubLogoSync=PV.clubLogoSync;
 // One-time purge: v9 could still have cached wrong basketball/Inter City badges and stale player photos.
-if(PV.state.assetMatchVersion!==10){
+// Later assetMatchVersion values are newer policies, not a reason to purge again.
+if(Number(PV.state.assetMatchVersion||0)<10){
   PV.state.clubLogos={};
   PV.state.photos={};
   PV.state.assetMatchVersion=10;
@@ -28,7 +29,6 @@ PV.clubLogoFor=async club=>{
   if(OFFICIAL_CLUB_LOGOS[club])return OFFICIAL_CLUB_LOGOS[club];
   PV.state.clubLogos=PV.state.clubLogos||{};
   if(PV.state.clubLogos[club])return PV.state.clubLogos[club];
-  // Fallback remains TheSportsDB, but only for football teams and with country/league sanity checks.
   try{
     const aliases={
       'Inter':['Inter Milan','Internazionale'],
@@ -58,15 +58,12 @@ PV.photoFor=async p=>{
   if(trusted){PV.state.photos[p.id]=trusted;PV.save?.();return trusted}
   return oldPhotoFor?.(p)||null;
 };
-// Android renders the regional England tag emoji as a plain black flag on some devices.
-// Use deterministic inline SVG flags for England/Scotland instead.
 const oldFlag=PV.flag;
 PV.flag=n=>{
   if(n==='Inglaterra')return '<span class="pv10-flag-svg england" aria-label="Inglaterra"><svg viewBox="0 0 60 36" role="img"><rect width="60" height="36" fill="#fff"/><rect x="25" width="10" height="36" fill="#c8102e"/><rect y="13" width="60" height="10" fill="#c8102e"/></svg></span>';
   if(n==='Escocia')return '<span class="pv10-flag-svg scotland" aria-label="Escocia"><svg viewBox="0 0 60 36" role="img"><rect width="60" height="36" fill="#0065bd"/><path d="M0 0L60 36M60 0L0 36" stroke="#fff" stroke-width="6"/></svg></span>';
   return oldFlag(n);
 };
-// Inter official brand image is a wide hero asset; crop its centred crest inside card badges.
 const oldHydrate=PV.hydrate;
 PV.hydrate=root=>{
   oldHydrate?.(root);
