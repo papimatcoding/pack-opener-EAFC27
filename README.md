@@ -11,35 +11,35 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Production version:** `V0.13 Canonical Card Visual System — LIVE`  
-**Dev release candidate:** `V0.14 Player Integrity + Real Pool Audit — QA PASSED`  
-**Dev head at final QA:** `6ec259e9bc61531dcf7ed910914de95943f02a58`  
-**Next target after release:** `deterministic club/league badge coverage + league-by-league current-roster audit`  
+**Production version:** `V0.14 Player Integrity + Real Pool Audit — LIVE`  
+**Production commit:** `80498752833a0c30d841c56b15f9607c692d334e`  
+**Release PR:** `#25`  
+**Production deploy:** GitHub Pages run `#21` — SUCCESS  
+**Final pre-release validation:** run `#39` — SUCCESS  
+**Next target:** `deterministic club/league badge coverage + league-by-league current-roster audit`  
 
 ### Branch truth
 
-`main` is still V0.13 until the V0.14 release PR is merged. `dev` contains the complete V0.14 integrity pass: PR #21 (current-club corrections + strict player-art policy + pool expansion), PR #22 (verified CE Sabadell 2026/27 roster depth) and PR #23 (Chromium smoke startup hardening). Continue future product work from `dev`, not those finished feature branches.
-
-V0.14 final dev CI is **run #37 — SUCCESS**. It passed engine regression, V0.14 integrity assertions, machine-readable asset coverage reporting, real Chromium mobile/desktop smoke, Draft 11/11 and the seven-rarity browser card matrix.
+V0.14 is merged to `main` and deployed successfully. `dev` contains the same product state plus this handoff update. Finished V0.14 work was PR #21 (integrity + transfers + pool), #22 (current CE Sabadell depth), #23 (browser-smoke hardening), #24 (handoff) and #25 (production release). Future work starts from `dev`.
 
 ---
 
 ## 🛡️ V0.14 PLAYER-ART LAW — DO NOT REGRESS THIS
 
-The user explicitly prefers a silhouette over a wrong or badly cropped photo. V0.14 therefore changes player art from “best effort” to a strict integrity rule:
+The user prefers a silhouette over a wrong player, old shirt, bad crop or rectangular web photo.
 
-> **A player image is shown only when it is a transparent football cutout for the exact player AND their current club. Otherwise show the neutral silhouette.**
+> **Show a player image only if it is a transparent football cutout for the exact player AND their current club. Otherwise show the neutral silhouette.**
 
-Consequences:
+Implementation rules:
 
-- only `strCutout` is accepted from the runtime fallback;
+- only `strCutout` is accepted from runtime fallback;
 - `strThumb`, `strRender`, generic portraits and rectangular internet photos are forbidden;
-- cached art is valid only while metadata still matches the player's current club;
-- changing club invalidates the cached cutout automatically;
-- the V0.14 migration clears all previous player-photo caches;
-- legacy V11/V12 “official portrait” hydration is disabled completely;
-- therefore old rectangular CE Sabadell internet photos cannot reappear;
-- a missing PNG/cutout is an intentional **silhouette**, not an asset failure.
+- cached art is valid only while its metadata still matches the player's current club;
+- a transfer automatically invalidates stale cached player art;
+- the V0.14 migration clears all old player-photo caches;
+- legacy V11/V12 official/rectangular portrait hydration is disabled;
+- old rectangular CE Sabadell internet photos cannot reappear;
+- missing cutout = intentional silhouette, not a visual failure.
 
 `v14/assets.js` owns this policy and exposes `PV.assetCoverage()` / `PV14_ASSET_AUDIT`.
 
@@ -47,7 +47,7 @@ Consequences:
 
 ## 🔄 CURRENT-CLUB AUDIT COMPLETED IN V0.14
 
-The dataset had become stale after the 2026 summer market. V0.14 explicitly corrects current-club records including:
+Explicit 2026 summer corrections include:
 
 - Karim Adeyemi → FC Barcelona;
 - João Cancelo → FC Barcelona;
@@ -58,23 +58,23 @@ The dataset had become stale after the 2026 summer market. V0.14 explicitly corr
 - Marc Casadó → Deportivo de La Coruña;
 - Héctor Fort → Real Sociedad.
 
-It also adds/updates real 2026/27 FC Barcelona squad depth such as Joan García, Szczęsny, Livaković, Balde, Koundé, Christensen, Eric García, Gerard Martín, Gavi, Fermín, Dani Olmo, Marc Bernal, Roony Bardghji and real younger squad players.
+V0.14 also adds/updates real 2026/27 FC Barcelona depth including Joan García, Szczęsny, Livaković, Balde, Koundé, Christensen, Eric García, Gerard Martín, Gavi, Fermín López, Dani Olmo, Marc Bernal, Roony Bardghji and younger real squad players.
 
-This is not yet a claim that every one of the 291 base-player records has been manually current-club-verified. V0.14 creates the machinery and begins the systematic audit; future roster work must continue league-by-league instead of assuming historical data is current.
+This is **not** a claim that every base player has been manually current-club-verified. Future work must continue league-by-league with current reliable sources. Never assume an old club assignment is still current.
 
 ---
 
 ## 🔵 CE SABADELL 2026/27 AUDIT
 
-V0.14 cross-checks the current CE Sabadell first team and expands the club as useful bronze/silver SBC depth. Current real first-team identities added/updated include Diego Fuoli, Nil Ruiz, Genar Fornés, Carlos Garcia, Arthur Bonaldo, Ton Ripoll, David Astals, Jan Molina, Jordi Ortega, Urri, Quadri Liameed, Rodrigo Escudero, Rubén Martínez, Alan Godoy, Javi López-Pinto and Joel Priego, alongside existing current Sabadell records such as José Ortega, Carlos Alemán, Kaiser, Eneko Aguilar, Miguelete and Agustín Coscia.
+The current CE Sabadell first team was cross-checked and expanded as useful bronze/silver SBC depth. Real current identities added/updated include Diego Fuoli, Nil Ruiz, Genar Fornés, Carlos Garcia, Arthur Bonaldo, Ton Ripoll, David Astals, Jan Molina, Jordi Ortega, Urri, Quadri Liameed, Rodrigo Escudero, Rubén Martínez, Alan Godoy, Javi López-Pinto and Joel Priego, alongside current existing records such as José Ortega, Carlos Alemán, Kaiser, Eneko Aguilar, Miguelete and Agustín Coscia.
 
-Important: **being in the verified Sabadell roster does not give a player a rectangular web photo.** If no exact current-Sabadell transparent cutout exists, the card stays as a silhouette by design.
+Being a verified current Sabadell player does **not** grant a rectangular web photo. If no exact current-Sabadell transparent cutout exists, the card must remain a silhouette.
 
 ---
 
 ## 📦 V0.14 PLAYER POOL / SBC DEPTH
 
-Final clean-build dataset after the audit:
+Final release dataset:
 
 - **302 total cards**;
 - **291 base players**;
@@ -82,41 +82,41 @@ Final clean-build dataset after the audit:
 - **109 silver**;
 - **133 gold**;
 - **11 special/TOTW**;
-- **36 CE Sabadell cards** in the overall dataset after reconciliation of existing + current additions.
+- **36 CE Sabadell cards** after reconciliation of existing + current additions.
 
-V0.14 also adds real players across useful rating bands rather than padding with invented identities, including additional Barça squad members and players such as Mikel Oyarzabal, Martín Zubimendi, Moisés Caicedo, Alexander Isak, Morgan Rogers, Jarrad Branthwaite, Milos Kerkez, Ethan Nwaneri, Kobbie Mainoo, Jorrel Hato, Lewis Miley and Archie Gray.
+Extra real-player depth includes players such as Mikel Oyarzabal, Martín Zubimendi, Moisés Caicedo, Alexander Isak, Morgan Rogers, Jarrad Branthwaite, Milos Kerkez, Ethan Nwaneri, Kobbie Mainoo, Jorrel Hato, Lewis Miley and Archie Gray.
 
-Ratings/stats remain **PackVerse launch estimates**; player identities and audited current-club assignments are the factual layer. Do not present PackVerse ratings as official EA ratings.
+Ratings/stats are **PackVerse launch estimates**. Do not present them as official EA ratings.
 
 ---
 
 ## 📊 ASSET COVERAGE AUDIT — CURRENT HONEST STATE
 
-CI now writes `.smoke-artifacts/asset-coverage-v14.json` on every validation run. This makes asset debt measurable instead of visual guesswork.
+Every validation run now writes `.smoke-artifacts/asset-coverage-v14.json`.
 
-Final V0.14 clean-build snapshot:
+Current clean-build snapshot:
 
-- player static/rectangular portraits: **0 intentionally**;
-- verified cutouts at clean build: **0 intentionally** — runtime admits them only after exact player + current-club verification;
-- deterministic club badges: **21 / 60 clubs (~35%)**;
-- deterministic competition logos: **7 / 14 leagues (50%)**.
+- static/rectangular player portraits: **0 intentionally**;
+- verified player cutouts at clean build: **0 intentionally** — they are admitted at runtime only after exact player + current-club verification;
+- deterministic club badges: **21 / 60 (~35%)**;
+- deterministic competition logos: **7 / 14 (50%)**.
 
-This means the next P0 is very clear: **club and competition identity coverage**, especially LALIGA HYPERMOTION, then LaLiga / Premier League / Bundesliga / Serie A / Ligue 1. Do not weaken the player-photo law merely to make coverage percentages look higher.
+This is now the clearest P0: **finish deterministic club and competition identity coverage**, starting with LALIGA HYPERMOTION. Do not weaken the player-photo law to inflate coverage numbers.
 
 ---
 
-## 🎨 V0.13 CARD SYSTEM — STILL THE VISUAL BASELINE
+## 🎨 V0.13 CARD SYSTEM — VISUAL BASELINE
 
-V0.13 remains the canonical visual renderer underneath V0.14:
+V0.13 remains the canonical renderer under V0.14:
 
-- `v13/card-ui.js` owns full `Card` + compact `FieldCard` rendering;
-- seven materials: `bronze-common`, `bronze-rare`, `silver-common`, `silver-rare`, `gold-common`, `gold-rare`, `totw`;
+- `v13/card-ui.js` owns full Card + compact FieldCard rendering;
+- seven materials: bronze common/rare, silver common/rare, gold common/rare, TOTW;
 - OVR/position → art → name → six horizontal stats → nation / competition / club;
 - two readable Club cards per row on phone;
 - rarity/material identity is preserved in packs, Club, XI, Draft and SBC;
-- TOTW remains black/gold and visually separate.
+- TOTW remains black/gold.
 
-V0.14 changes **data and asset integrity**, not the successful V0.13 card geometry.
+V0.14 changes data and asset integrity, not the successful V0.13 card geometry.
 
 ---
 
@@ -131,9 +131,9 @@ V0.14 changes **data and asset integrity**, not the successful V0.13 card geomet
 - Chemistry is club / nation / league inspired, max 3 per player; team chemistry is 0–100.
 - Team score max is **199 = 99 OVR + 100 chemistry**.
 - Card rarity/material must remain identical in packs, Club, XI, Draft and SBC.
-- TOTW Lab/future fictional promos are simulated PackVerse content, clearly separate from official base data.
+- TOTW Lab/future fictional promos are simulated PackVerse content, separate from official base data.
 - **Correct silhouette > wrong player / wrong shirt / wrong club / badly cropped portrait.**
-- Visual quality and data integrity are release requirements; green tests alone are insufficient.
+- Visual quality and data integrity are release requirements.
 
 ---
 
@@ -141,19 +141,19 @@ V0.14 changes **data and asset integrity**, not the successful V0.13 card geomet
 
 ### P0 — Deterministic club / competition assets
 
-The coverage report shows only 21/60 clubs and 7/14 competitions are deterministic at clean build. Complete LALIGA HYPERMOTION first, especially all clubs represented by SBC fodder, then the major first divisions. Every unresolved badge should keep a readable local fallback rather than a broken image.
+Coverage is only 21/60 clubs and 7/14 competitions at clean build. Complete LALIGA HYPERMOTION first, then LaLiga / Premier League / Bundesliga / Serie A / Ligue 1. Every unresolved badge must keep a readable local fallback.
 
 ### P0 — Systematic current-roster audit
 
-Continue what V0.14 started. Audit clubs/players league-by-league with current reliable sources. Any transfer correction must update both club/league metadata and invalidate stale player art. Add tests for high-profile transfer corrections so stale clubs cannot silently return.
+Audit players league-by-league with current reliable sources. Any transfer correction must update club + league and invalidate stale player art. Add regression assertions for high-profile transfers.
 
 ### P1 — Expand real pool further
 
-302 cards is much healthier but still small for a long-term pack opener. Expand with **real players** in balanced bronze/silver/gold bands and enough positional coverage for SBCs. Prefer completing real squads/leagues over random isolated names.
+302 cards is healthier but still small for a long-term pack opener. Expand with **real players** in balanced bronze/silver/gold bands and enough positional coverage for SBCs. Prefer completing real squads/leagues over random isolated names.
 
 ### P1 — Retire historical runtime ownership
 
-V0.13/V0.14 are canonical for cards/assets, but old `v4 → v12` layers still load for compatibility. Gradually prove and remove obsolete ownership instead of creating endless override layers.
+V0.13/V0.14 are canonical for cards/assets, but old `v4 → v12` layers still load for compatibility. Gradually prove and remove obsolete ownership instead of piling on overrides.
 
 ### P1 — Walkout / Draft / SBC polish
 
@@ -163,34 +163,23 @@ Keep normal pulls fast. 85+ suspense remains `nation → position → club → O
 
 ## 🧪 RELEASE / SMOKE RULE — MANDATORY
 
-Every release must pass all three layers.
+Every release must pass:
 
-### 1. Engine / integrity smoke
+1. `scripts/validate-v4.mjs`
+2. `scripts/smoke-v12.mjs`
+3. `scripts/smoke-v13.mjs`
+4. `scripts/smoke-v14.mjs`
+5. `scripts/report-assets-v14.mjs`
+6. Chromium mobile `390×844` + desktop `1440×900`
+7. Draft 11/11 field-card smoke
+8. seven-rarity browser matrix
+9. human screenshot review
 
-Run:
+V0.14 smoke specifically checks transfer corrections, Barça/Sabadell identities, bronze/silver/gold depth, cutout-only art, no `strThumb`/`strRender`, current-club-tied caches and silhouette-first behavior.
 
-- `scripts/validate-v4.mjs`;
-- `scripts/smoke-v12.mjs`;
-- `scripts/smoke-v13.mjs`;
-- `scripts/smoke-v14.mjs`;
-- `scripts/report-assets-v14.mjs`.
+Browser launchers have a longer CDP startup window and one retry because run #36 exposed a runner startup flake before the page loaded. Run #37 and release run #39 passed afterward.
 
-V0.14 smoke specifically checks current-club transfer corrections, real Barça/Sabadell pool entries, bronze/silver/gold depth, cutout-only art, no `strThumb`/`strRender`, current-club-tied caches and the silhouette-first policy.
-
-### 2. Real browser smoke
-
-Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, Club filters, Draft 11/11 and desktop Companion layout. Also run the seven-rarity matrix. Browser launchers now have a longer CDP startup window and one retry because run #36 exposed a runner startup flake before the page even loaded.
-
-### 3. Human smoke
-
-Actually inspect screenshots. For asset changes, specifically look for:
-
-- wrong old-team shirts;
-- rectangular/pasted portraits;
-- stale player images after a transfer;
-- empty/broken club or league identity slots;
-- silhouettes rendering cleanly when a cutout is unavailable;
-- mobile Club and Draft field readability.
+Human review for asset work must look for old-team shirts, rectangular portraits, stale transfer photos, broken identity slots and clean silhouettes.
 
 ---
 
@@ -216,12 +205,12 @@ Do not make normal product commits directly to `main`.
 .
 ├── index.html
 ├── js/data.js
-├── v4/ ... v11/              # historical/runtime compatibility layers
+├── v4/ ... v11/              # historical/runtime compatibility
 ├── v12/                      # stabilized systems
-├── v13/                      # canonical card visual system
+├── v13/                      # canonical card visuals
 ├── v14/
-│   ├── content.js            # current-club corrections + real pool expansion
-│   └── assets.js             # cutout-only exact-current-club art law + coverage API
+│   ├── content.js            # current-club corrections + real pool
+│   └── assets.js             # exact-current-club cutout-only art law
 ├── scripts/
 │   ├── validate-v4.mjs
 │   ├── smoke-v12.mjs
@@ -244,7 +233,7 @@ Do not make normal product commits directly to `main`.
 3. Read **V0.14 PLAYER-ART LAW**, **ASSET COVERAGE AUDIT** and **NEXT WORK** before touching cards/assets.
 4. Never re-enable rectangular internet player photos merely to increase coverage.
 5. Continue from `dev`.
-6. Run the mandatory V0.14 integrity + browser suite before moving anything to `main`.
+6. Run mandatory V0.14 integrity + browser smoke before production.
 7. Update this README after the next meaningful improvement.
 
 **This README is the canonical handoff for PackVerse.**
