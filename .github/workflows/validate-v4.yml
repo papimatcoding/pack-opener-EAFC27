@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.13 Cards
+name: Validate PackVerse v0.14 Integrity
 
 on:
   push:
@@ -25,6 +25,8 @@ jobs:
         run: node scripts/smoke-v12.mjs
       - name: V0.13 canonical card audit — all seven rarities
         run: node scripts/smoke-v13.mjs
+      - name: V0.14 player integrity + pool audit
+        run: node scripts/smoke-v14.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
       - name: Chromium card matrix — all seven rarities
