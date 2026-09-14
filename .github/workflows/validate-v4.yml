@@ -33,6 +33,8 @@ jobs:
         run: node scripts/smoke-v16.mjs
       - name: V0.14 machine-readable asset coverage report
         run: node scripts/report-assets-v14.mjs
+      - name: V0.16 current visual coverage report
+        run: node scripts/report-assets-v16.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
       - name: Chromium card matrix — all seven rarities
