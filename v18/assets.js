@@ -4,7 +4,7 @@ const PV=window.PV4,D=PV?.D;if(!PV||!D)return;
 
 // V0.18: deterministic Spanish club identity. Entries are pinned only where the
 // football-data crest identity was verified in current feeds or archived API payloads.
-// Explicit URL entries also support the provider's non-numeric Andorra asset.
+// Explicit URL entries also support provider SVG assets when PNG is unavailable.
 const CLUB_ASSETS_V18={
   'CE Sabadell FC':'https://crests.football-data.org/8921.png',
   'Racing Santander':'https://crests.football-data.org/5335.png',
@@ -29,7 +29,7 @@ const CLUB_ASSETS_V18={
   'FC Andorra':'https://crests.football-data.org/andorra.svg',
   'UD Almería':'https://crests.football-data.org/267.png',
   'Cádiz CF':'https://crests.football-data.org/264.png',
-  'Córdoba CF':'https://crests.football-data.org/259.png',
+  'Córdoba CF':'https://crests.football-data.org/259.svg',
   'Sporting Gijón':'https://crests.football-data.org/96.png'
 };
 
