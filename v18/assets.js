@@ -2,9 +2,9 @@
 'use strict';
 const PV=window.PV4,D=PV?.D;if(!PV||!D)return;
 
-// V0.18: deterministic current Spanish club identity. These are pinned only where the
-// football-data crest payload/current 2026 fixture feed was verified. Explicit URL entries
-// let us support the provider's non-numeric Andorra asset without inventing an ID.
+// V0.18: deterministic Spanish club identity. Entries are pinned only where the
+// football-data crest identity was verified in current feeds or archived API payloads.
+// Explicit URL entries also support the provider's non-numeric Andorra asset.
 const CLUB_ASSETS_V18={
   'CE Sabadell FC':'https://crests.football-data.org/8921.png',
   'Racing Santander':'https://crests.football-data.org/5335.png',
@@ -26,7 +26,11 @@ const CLUB_ASSETS_V18={
   'Rayo Vallecano':'https://crests.football-data.org/87.png',
   'Real Sociedad':'https://crests.football-data.org/92.png',
   'CD Leganés':'https://crests.football-data.org/745.png',
-  'FC Andorra':'https://crests.football-data.org/andorra.svg'
+  'FC Andorra':'https://crests.football-data.org/andorra.svg',
+  'UD Almería':'https://crests.football-data.org/267.png',
+  'Cádiz CF':'https://crests.football-data.org/264.png',
+  'Córdoba CF':'https://crests.football-data.org/259.png',
+  'Sporting Gijón':'https://crests.football-data.org/96.png'
 };
 
 PV.state.clubLogos=PV.state.clubLogos||{};
