@@ -12,32 +12,34 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 **Production branch:** `main`  
 **Integration branch:** `dev`  
 **Production version:** `V0.15 Visual Cards + Player Cutout Recovery — LIVE`  
-**Production commit:** `1505f4f0dbe9b990a3b5e0e689a9d21d3205dcc9`  
-**V0.16 candidate:** `Current-Shirt Art + IF Reuse + Identity Coverage`  
-**V0.16 status:** implementation complete on feature branch; full dev CI + human screenshot review required before production  
-**Next target after V0.16:** expand manually verified current-shirt cutout registry league-by-league and close remaining badge/logo gaps  
+**V0.16 release candidate:** `Current-Shirt Art + IF Reuse + Identity Coverage — DEV QA PASSED`  
+**V0.16 final QA dev commit:** `3e7ba7b1c49b447c0313492349f626c3c54cf5b4`  
+**V0.16 full validation:** run #46 (`34829818936`) — **SUCCESS**  
+**Next target after release:** expand verified current-shirt cutouts team-by-team and close remaining deterministic club/league asset gaps  
 
 ### Branch truth
 
-V0.15 is the current production baseline. V0.16 is a visual/asset integrity pass and must not be treated as released until it has been merged to `dev`, passed the complete engine + Chromium suite, had its screenshots manually inspected, and then passed the production release PR.
+V0.16 is complete and QA-passed on `dev`; `main` remains V0.15 until the release PR is merged. V0.16 was not accepted on the first green-looking attempt: the full audit found and fixed three separate issues before release — a historical V0.15 cache assertion that blocked legitimate later versions, five special-only IF cards without a reusable base card, and responsive rerenders that could lose the final V0.16 cutout geometry. Run #46 passed only after all three were resolved.
 
 ---
 
 ## 🎨 V0.16 CARD ASSET RULES
 
-The visual priority remains:
+Visual priority is now explicit:
 
 > **Correct current-shirt transparent cutout > silhouette > stale/wrong-shirt/badly cropped image.**
 
-V0.16 adds an extra protection for recent transfers because provider metadata can update a player's team before the provider image itself changes. High-risk recent transfers are therefore blocked from provider artwork unless a current-shirt cutout has been manually verified.
+Provider metadata alone is not enough for high-risk recent transfers because a player's team can update before the provider cutout does. Those players are guarded: if a current-shirt transparent image is not verified, the game deliberately shows a silhouette.
 
-### Livaković regression
+### Livaković regression — fixed and visually verified
 
-Dominik Livaković is stored as an FC Barcelona player in the dataset. V0.16 pins a manually verified current FC Barcelona transparent player asset and purges stale cached/provider artwork for him. A Girona-shirt image is now considered an explicit regression and is checked by both static and real-browser QA.
+Dominik Livaković is an FC Barcelona player in the current dataset. V0.16 pins a verified current Barça transparent cutout and purges stale/provider artwork for him. A dedicated real-Chromium test fails if his rendered URL stops being the FC Barcelona official asset, contains `Girona`, loses `object-fit: contain`, or his club stops being Barcelona.
 
-### Current FC Barcelona cutout registry
+Human review of the final mobile screenshot confirmed Livaković in the current orange Barça goalkeeper shirt, correctly cut out inside the card, with Barça crest and league identity visible and no circular plate behind either icon.
 
-V0.16 introduces a small high-confidence registry of current official transparent FC Barcelona player assets for recently transferred/current players where stale provider art was especially likely. The registry currently covers:
+### Verified current FC Barcelona cutout registry
+
+V0.16 currently pins eight high-confidence current transparent Barça assets:
 
 - Dominik Livaković;
 - Joan García;
@@ -48,112 +50,111 @@ V0.16 introduces a small high-confidence registry of current official transparen
 - Rodri;
 - João Cancelo.
 
-Do not turn this registry into a collection of generic portraits. Entries must remain transparent/current-shirt assets.
+This registry is intentionally conservative. Do not add generic portraits or old-shirt images merely to increase coverage.
 
-### IF / TOTW artwork rule
+---
 
-IF/TOTW cards no longer need their own player-image search. When a special card has a corresponding base card, V0.16 syncs its current club, league, nation and search identity to that base card and reuses **exactly the same resolved player image URL**. This avoids duplicate asset debt and prevents an IF from showing a different or older shirt than its normal card.
+## ⚫ IF / TOTW ARTWORK — 11/11 BASE-CARD REUSE
+
+Every current IF/TOTW card now resolves to a normal base card. The special inherits the base card's current club, league, nation/search identity and uses **the exact same resolved player-image URL**. If the normal card is a silhouette, the IF is also a silhouette; no duplicate independent photo search exists.
+
+Five historical special-only identities were given real-player base versions so this rule can be complete rather than partial: Roberto Fernández, Yassir Zabiri, Zian Flemming, Igor Jesus and Leif Davis. Their ratings/stats are PackVerse launch estimates. Current-club metadata was reconciled where needed, including Yassir Zabiri → Racing Santander and Zian Flemming → Ipswich Town.
+
+Final machine audit: **11 / 11 special cards bound to a base card**.
 
 ---
 
 ## 🪪 CLUB / LEAGUE IDENTITY COVERAGE
 
-V0.15 removed the circular fallback discs. V0.16 keeps that law and expands actual asset discovery instead of decorating missing assets.
+V0.15 removed the circular fallback discs; V0.16 expands actual asset discovery instead of decorating missing assets.
 
-- all visible club/league slots are now eligible for hydration rather than only the small historical first-page slice;
-- club lookup has a broader current alias set;
-- league lookup covers LaLiga, LALIGA HYPERMOTION, Premier League, Bundesliga, Serie A, Ligue 1, Liga Portugal, Süper Lig, MLS, Scottish Premiership and Belgian Pro League where the provider exposes a valid football identity asset;
-- a successful crest/logo suppresses fallback initials completely;
-- an unresolved identity stays quiet plain text — **never a fake circle/pill/badge background**.
+- all visible club/league slots are eligible for hydration;
+- broader club aliases cover common current naming differences;
+- league resolvers cover 11 of the 14 league families currently represented in the dataset: LaLiga, LALIGA HYPERMOTION, Premier League, Bundesliga, Serie A, Ligue 1, Liga Portugal, Süper Lig, MLS, Scottish Premiership and Belgian Pro League;
+- a successfully loaded crest/logo suppresses fallback initials completely;
+- unresolved assets remain understated plain text — never a circle, pill or fake badge background;
+- mobile and desktop Chromium audits verify real identity slots have `border-radius: 0`, transparent background and no background image.
 
-This is still not a claim of 100% deterministic icon coverage. The remaining gaps should be filled systematically rather than with wrong logos.
+This is **not** a claim of 100% icon coverage. The remaining club/competition gaps are the next P0.
 
 ---
 
 ## 🛡️ PLAYER-ART LAW — DO NOT REGRESS
 
-- exact player + exact current club remains mandatory for ordinary provider cutouts;
-- recent-transfer players can be stricter: manually verified current-shirt cutout or silhouette;
-- `strThumb`, `strRender`, generic rectangular portraits and web-photo crops remain forbidden;
-- cached player art is club-aware and policy-versioned;
-- CE Sabadell players without a correct transparent current-team cutout remain silhouettes;
-- special cards reuse their base-card art;
-- missing image is preferable to an incorrect image.
+- ordinary provider art requires exact player + exact current club + transparent cutout;
+- recent-transfer players can require manual current-shirt verification;
+- `strThumb`, `strRender`, generic rectangular portraits and web-photo crops are forbidden;
+- cached art is club-aware and policy-versioned;
+- CE Sabadell players without a correct transparent current-team cutout stay silhouettes;
+- every IF reuses its base-card art;
+- missing image is preferable to incorrect image.
 
 ---
 
-## 📦 CURRENT PLAYER POOL
+## 📦 CURRENT PLAYER POOL AFTER V0.16
 
-V0.16 does not reduce the V0.14/V0.15 real-player pool baseline:
+Machine-readable clean-build report:
 
-- **302 total cards**;
-- **291 base players**;
-- **49 bronze**;
-- **109 silver**;
-- **133 gold**;
-- **11 special/TOTW**.
+- **307 total cards**;
+- **296 base-player cards**;
+- **11 special/TOTW cards**;
+- **64 clubs** represented;
+- **14 leagues** represented;
+- **8 manually verified official current Barça cutouts**;
+- **11 league resolver specs**;
+- **11 / 11 IF cards bound to base cards**.
 
-Ratings/stats are PackVerse launch estimates, not official EA ratings.
+The five added normal cards exist primarily to remove special-only identity debt and make IF image reuse correct. Ratings/stats remain PackVerse estimates, not official EA ratings.
+
+---
+
+## ✅ FINAL V0.16 ANALYSIS / QA SNAPSHOT
+
+Final dev run #46 passed every layer:
+
+- legacy regression checks;
+- V0.12 systems regression;
+- V0.13 seven-material canonical card audit;
+- V0.14 player-integrity/pool audit;
+- V0.15 visual asset guarantees;
+- V0.16 current-shirt + IF/base static audit;
+- V0.14 and V0.16 machine-readable asset reports;
+- real Chromium mobile + desktop Companion smoke;
+- Draft field smoke;
+- seven-rarity browser card matrix;
+- dedicated V0.16 current-shirt / identity-slot / IF-reuse browser audit;
+- browser artifact upload.
+
+### Human screenshot review performed after run #46
+
+Reviewed `mobile-visual-audit-v16.png`, `mobile-livakovic-v16.png`, `desktop-visual-audit-v16.png`, normal mobile/desktop Club and Draft screenshots.
+
+Observed final state:
+
+- Livaković clearly renders the current orange FC Barcelona goalkeeper cutout; no Girona shirt remains;
+- Rodri, Joan García, Anthony Gordon, Gabriel Jesus, João Cancelo, Adeyemi and Xavi Espart render as clean transparent current Barça cutouts in the curated audit;
+- club and league icons no longer sit on circular plates;
+- player cutouts remain inside the portrait zone and do not collide with name/stats;
+- the same cutout geometry survives mobile → desktop responsive rerenders;
+- Mbappé IF and base use the same resolved player image;
+- deliberate silhouettes remain visually clean where no safe cutout exists;
+- Draft still fits 11/11 cards with readable field geometry;
+- no regression was observed in gold/silver/bronze/TOTW card material hierarchy.
+
+V0.16 is therefore cleared for a `dev → main` production release.
 
 ---
 
 ## 🧱 CARD VISUAL STACK
 
-- `v13/card-ui.js` remains the canonical full Card + FieldCard renderer;
-- `v13/cards.css` owns the seven material families;
-- `v15/visuals.css` removes identity discs and cleans visual layering;
-- `v16/visuals.css` refines current cutout scale and identity spacing;
-- `v16/content.js` binds special cards to their base-card identity;
-- `v16/assets.js` owns the recent-transfer guard, verified current-shirt registry, IF/base art reuse and expanded club/league hydration.
+- `v13/card-ui.js` — canonical full Card + FieldCard renderer;
+- `v13/cards.css` — seven material families and core composition;
+- `v15/visuals.css` — clean identity slots and provider-cutout visual layer;
+- `v16/visuals.css` — final verified-cutout geometry and identity spacing;
+- `v16/content.js` — complete IF/base identity binding and base versions for historical special-only cards;
+- `v16/assets.js` — official current-cutout registry, recent-transfer stale-shirt guard, IF/base art reuse and broader club/league hydration.
 
-Do not reintroduce independent competing card renderers.
-
----
-
-## 🧪 V0.16 RELEASE / ANALYSIS RULE — MANDATORY
-
-The user explicitly requires a complete analysis before an update is called good. V0.16 therefore must pass all previous regression layers plus its own dedicated checks.
-
-### Engine/static
-
-Run:
-
-1. `scripts/validate-v4.mjs`
-2. `scripts/smoke-v12.mjs`
-3. `scripts/smoke-v13.mjs`
-4. `scripts/smoke-v14.mjs`
-5. `scripts/smoke-v15.mjs`
-6. `scripts/smoke-v16.mjs`
-7. `scripts/report-assets-v14.mjs`
-
-V0.16 static smoke explicitly asserts Livaković is pinned to FC Barcelona official artwork, no Girona regression is encoded, recent-transfer guarding exists, IF/base sharing exists, unsafe portrait sources are still banned, major league resolvers exist and no circular identity UI can return.
-
-### Real Chromium
-
-Run all existing browser smoke plus `scripts/browser-visual-audit-v16.mjs` at mobile and desktop sizes. The dedicated V0.16 browser audit seeds a curated FC Barcelona card group and verifies:
-
-- Livaković's card is FC Barcelona and renders the current official Barça cutout;
-- the rendered URL does not contain Girona;
-- current cutouts use the V0.16 art profile;
-- identity slots with real images do not regain circular backgrounds;
-- a special/base pair reuses the same artwork when a matching IF exists;
-- screenshots are saved as `mobile-visual-audit-v16.png` and `desktop-visual-audit-v16.png`.
-
-### Human visual review
-
-Before `main`, manually inspect:
-
-- V0.16 curated mobile screenshot;
-- V0.16 curated desktop screenshot;
-- normal Club mobile + desktop smoke;
-- Draft XI field cards;
-- seven-rarity matrix;
-- Livaković shirt/current-team appearance;
-- badge/league-logo scale and missing-asset fallbacks;
-- player cutout crop/scale;
-- IF/base image consistency.
-
-**Green CI alone is not enough.**
+Do not introduce another competing card renderer.
 
 ---
 
@@ -161,19 +162,25 @@ Before `main`, manually inspect:
 
 ### P0 — Verified player-art coverage
 
-Expand current-shirt transparent assets team-by-team, prioritising cards users actually see often. Do not accept stale provider images merely to raise coverage.
+Expand current-shirt transparent assets team-by-team. Prioritise high-OVR/high-frequency pack cards first, then complete coherent league/club groups. Maintain a measurable list of PNG / silhouette / stale-blocked status.
 
 ### P0 — Deterministic club / competition identity
 
-Keep filling remaining club and league assets, especially LALIGA HYPERMOTION and any teams represented heavily in the SBC pool.
+Close remaining club and competition logo gaps, especially LALIGA HYPERMOTION and clubs heavily represented in SBC fodder. Prefer a correct flat text fallback over a wrong crest.
 
 ### P1 — Current-roster audit
 
-Continue league-by-league transfer verification. Any player moved between clubs must invalidate stale art.
+Continue league-by-league transfer verification; any club move must invalidate stale art.
 
-### P1 — Card material/presentation polish
+### P1 — Card presentation polish
 
-Continue spacing, crop overrides and rarity-specific detailing only after asset integrity is maintained.
+After integrity, continue per-player crop overrides, small-screen typography/spacing and rarity-specific frame/material detailing.
+
+---
+
+## 🧪 RELEASE RULE — MANDATORY
+
+Every visual release must pass engine/static, real Chromium and human screenshot review. V0.16 adds `scripts/smoke-v16.mjs`, `scripts/report-assets-v16.mjs` and `scripts/browser-visual-audit-v16.mjs`. Do not call an update stable from green unit checks alone.
 
 ---
 
@@ -191,44 +198,13 @@ Continue spacing, crop overrides and rarity-specific detailing only after asset 
 
 ---
 
-## 🧱 CURRENT STRUCTURE
-
-```text
-.
-├── index.html
-├── js/data.js
-├── v4/ ... v12/               # historical/runtime compatibility
-├── v13/                       # canonical card visual renderer/materials
-├── v14/                       # player integrity + real pool
-├── v15/                       # clean identity slots + improved provider matching
-├── v16/
-│   ├── content.js             # IF/base current identity binding
-│   ├── assets.js              # current-shirt registry + transfer guard + coverage
-│   └── visuals.css            # final V0.16 visual refinements
-├── scripts/
-│   ├── validate-v4.mjs
-│   ├── smoke-v12.mjs
-│   ├── smoke-v13.mjs
-│   ├── smoke-v14.mjs
-│   ├── smoke-v15.mjs
-│   ├── smoke-v16.mjs
-│   ├── browser-smoke-v12.mjs
-│   ├── browser-card-matrix-v13.mjs
-│   └── browser-visual-audit-v16.mjs
-├── .github/workflows/
-├── manifest.json
-└── sw.js
-```
-
----
-
 ## 🔁 HOW TO RESUME FROM ANOTHER CHAT
 
 1. Open this README on `dev` first.
-2. Check `main`, `dev`, open PRs and the latest validation run.
-3. Preserve the current-shirt/silhouette law and IF/base art reuse.
+2. Inspect `main`, `dev`, open PRs and the newest validation run.
+3. Preserve current-shirt/silhouette law, recent-transfer guard and 11/11 IF/base reuse.
 4. Do not trust provider team metadata alone for recent-transfer artwork.
-5. Review screenshots before calling card visuals stable.
+5. Review browser screenshots before accepting card work.
 6. Update this README after every meaningful visual/asset change.
 
 **This README is the canonical handoff for PackVerse.**
