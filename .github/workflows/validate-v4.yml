@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.15 Visual Assets
+name: Validate PackVerse v0.16 Card Assets
 
 on:
   push:
@@ -29,12 +29,16 @@ jobs:
         run: node scripts/smoke-v14.mjs
       - name: V0.15 visual asset audit
         run: node scripts/smoke-v15.mjs
+      - name: V0.16 current-shirt + IF/base asset audit
+        run: node scripts/smoke-v16.mjs
       - name: V0.14 machine-readable asset coverage report
         run: node scripts/report-assets-v14.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
       - name: Chromium card matrix — all seven rarities
         run: node scripts/browser-card-matrix-v13.mjs
+      - name: Chromium V0.16 visual audit — current shirt + identity slots + IF reuse
+        run: node scripts/browser-visual-audit-v16.mjs
       - name: Upload browser smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
