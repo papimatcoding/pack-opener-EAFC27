@@ -27,6 +27,8 @@ jobs:
         run: node scripts/smoke-v13.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
+      - name: Chromium card matrix — all seven rarities
+        run: node scripts/browser-card-matrix-v13.mjs
       - name: Upload browser smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
