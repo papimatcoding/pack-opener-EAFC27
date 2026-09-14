@@ -1,4 +1,4 @@
-name: Validate PackVerse v0.17 Asset Persistence
+name: Validate PackVerse v0.18 Spanish Identity
 
 on:
   push:
@@ -33,12 +33,16 @@ jobs:
         run: node scripts/smoke-v16.mjs
       - name: V0.17 persistence + lazy hydration audit
         run: node scripts/smoke-v17.mjs
+      - name: V0.18 deterministic Spanish identity audit
+        run: node scripts/smoke-v18.mjs
       - name: V0.14 machine-readable asset coverage report
         run: node scripts/report-assets-v14.mjs
       - name: V0.16 current visual coverage report
         run: node scripts/report-assets-v16.mjs
       - name: V0.17 deterministic identity coverage report
         run: node scripts/report-assets-v17.mjs
+      - name: V0.18 Spanish identity coverage report
+        run: node scripts/report-assets-v18.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
       - name: Chromium card matrix — all seven rarities
@@ -47,6 +51,8 @@ jobs:
         run: node scripts/browser-visual-audit-v16.mjs
       - name: Chromium V0.17 — reload persistence + deterministic crests
         run: node scripts/browser-assets-v17.mjs
+      - name: Chromium V0.18 — Spanish deterministic identities
+        run: node scripts/browser-spanish-assets-v18.mjs
       - name: Upload browser smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
