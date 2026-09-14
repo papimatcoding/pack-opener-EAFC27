@@ -15,10 +15,12 @@ assert(by('João Cancelo')?.club==='FC Barcelona','Cancelo current club regressi
 assert(by('Rodri')?.club==='FC Barcelona','Rodri current club regression');
 assert(by('Gabriel Jesus')?.club==='FC Barcelona','Gabriel Jesus current club regression');
 assert(by('Anthony Gordon')?.club==='FC Barcelona','Anthony Gordon current club regression');
-for(const n of ['Joan García','Dominik Livaković','Brian Fariñas','Xavi Espart','Jesse Bisiwu','Hamza Abdelkarim'])assert(by(n),`missing real pool addition ${n}`);
+for(const n of ['Joan García','Dominik Livaković','Brian Fariñas','Xavi Espart','Jesse Bisiwu','Hamza Abdelkarim'])assert(by(n),`missing real Barça pool addition ${n}`);
+for(const n of ['Diego Fuoli','Nil Ruiz','Genar Fornés','Carlos Garcia','Arthur Bonaldo','Ton Ripoll','David Astals','Jan Molina','Jordi Ortega','Urri','Quadri Liameed','Rodrigo Escudero','Rubén Martínez','Alan Godoy','Javi López-Pinto','Joel Priego']){const p=by(n);assert(p,`missing real Sabadell player ${n}`);assert(p.club==='CE Sabadell FC',`${n} current Sabadell club regression`)}
 const tiers=Object.fromEntries(['bronze','silver','gold','special'].map(t=>[t,D.PLAYERS.filter(p=>p.tier===t).length]));
-assert(D.PLAYERS.length>=280,`pool expansion too small: ${D.PLAYERS.length}`);
-assert(tiers.bronze>=39,'bronze progression pool regressed');assert(tiers.silver>=20,'silver pool too small');assert(tiers.gold>=120,'gold pool too small');
+assert(D.PLAYERS.length>=295,`pool expansion too small: ${D.PLAYERS.length}`);
+assert(tiers.bronze>=45,`bronze progression pool too small: ${tiers.bronze}`);assert(tiers.silver>=100,'silver pool too small');assert(tiers.gold>=120,'gold pool too small');
+const sab=D.PLAYERS.filter(p=>!p.special&&p.club==='CE Sabadell FC');assert(sab.length>=20,`Sabadell pool too small: ${sab.length}`);assert(sab.some(p=>p.tier==='bronze')&&sab.some(p=>p.tier==='silver'),'Sabadell must contribute bronze and silver SBC cards');
 const asset=fs.readFileSync('v14/assets.js','utf8');
 assert(asset.includes("hit?.strCutout||null"),'v14 must use cutout only');
 assert(!asset.includes('strThumb')&&!asset.includes('strRender'),'generic portrait/render fallback reintroduced');
@@ -27,4 +29,4 @@ assert(asset.includes('Rectangular internet photos are intentionally discarded')
 assert(ctx.window.PV14_ASSET_AUDIT?.rectangularPhotosAllowed===false,'runtime policy allows rectangular photos');
 assert(PV.state.assetPolicyVersion===14,'asset cache was not migrated to policy v14');
 const cov=PV.assetCoverage();assert(cov.policy.includes('CUTOUT ONLY'),'coverage policy mismatch');
-console.log(`PackVerse v0.14 integrity smoke OK · ${D.PLAYERS.length} cards · bronze ${tiers.bronze} · silver ${tiers.silver} · gold ${tiers.gold} · strict current-club cutout-only art`);
+console.log(`PackVerse v0.14 integrity smoke OK · ${D.PLAYERS.length} cards · bronze ${tiers.bronze} · silver ${tiers.silver} · gold ${tiers.gold} · Sabadell ${sab.length} · strict current-club cutout-only art`);
