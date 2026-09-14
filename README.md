@@ -11,15 +11,15 @@ Mobile-first football card-collection PWA inspired by Ultimate Team / MADFUT loo
 **Last handoff update:** 2026-09-14  
 **Production branch:** `main`  
 **Integration branch:** `dev`  
-**Production version before release merge:** `V0.12 Stabilized`  
-**Dev release candidate:** `V0.13 Canonical Card Visual System — QA PASSED`  
+**Production version:** `V0.13 Canonical Card Visual System — LIVE`  
+**Production commit:** `7578c3b555a4d765fbd26a3105cb2c599734364b`  
 **Next target:** `asset coverage report + deterministic player/club/competition coverage + crop outliers`  
 
 ### Branch truth
 
-`dev` is the canonical integration state and now contains the complete V0.13 card overhaul plus the fixes found during human screenshot review. V0.13 is ready for `dev → main`; after that merge, `main`/Pages becomes the production truth.
+V0.13 is merged to `main` through PR #18 and deployed successfully to GitHub Pages by Pages run #19. Release validation also passed on PR run #32. `main` and `dev` now share the V0.13 product state; future work starts from `dev`.
 
-Historical V0.13 working branches/PRs are finished: initial card system PR #13, human-smoke fixes #14, browser-regression fix #15 and official-portrait vignette #16. Continue future product work from `dev`, not those branches.
+Historical V0.13 working PRs are finished: #13 initial card system, #14 human-smoke fixes, #15 browser-regression fix, #16 official-portrait vignette, #17 release handoff and #18 production release. Do not continue from those old branches.
 
 ### Why V0.13 exists
 
@@ -41,9 +41,9 @@ The user-provided mobile Club screenshot exposed that V0.12 cards were technical
 
 ### Final V0.13 QA snapshot
 
-Latest green CI run: **run #30**, dev commit `2406e2a5a3fa3135b0f2035a22033e9baba23bb1`.
+Dev run #30 passed the complete engine/browser/card-matrix suite after the last visual fix. PR release run #32 passed again before merge to `main`. Pages run #19 then deployed production successfully.
 
-Passed:
+Validated:
 
 - legacy regression suite;
 - V0.12 systems smoke;
@@ -54,19 +54,9 @@ Passed:
 - screenshot artifact upload;
 - no browser runtime exception in the final run.
 
-Human screenshot review was performed, not just geometry assertions. It caught two real issues during development: official rectangular photos looked pasted onto the card, and the first global image-error fallback caused a browser regression. Both were fixed and the complete suite was rerun successfully.
+Human screenshot review was performed. It caught two real issues during development: official rectangular photos looked pasted onto the card, and the first global image-error fallback caused a browser regression. Both were fixed and the complete suite was rerun successfully.
 
-Final matrix visually reviewed:
-
-- TOTW: distinct black/gold and readable;
-- gold rare: high-energy rare material;
-- gold common: deliberately calmer;
-- silver rare/common: clearly distinguishable;
-- bronze rare/common: clearly distinguishable;
-- transparent cutout: correctly integrated;
-- official rectangular portrait: now intentionally vignetted;
-- silhouette fallback: remains neutral and readable;
-- identity row: nation + competition + club remain inside reserved space.
+Final matrix reviewed: TOTW black/gold; gold rare/common; silver rare/common; bronze rare/common; transparent cutout; official portrait vignette; silhouette fallback; nation + competition + club identity row.
 
 ### Stable baseline that must not regress
 
@@ -128,15 +118,11 @@ Every release must pass all three layers.
 
 ### 1. Engine / AI smoke
 
-Validate runtime loading, dataset IDs, pack simulations/odds/item counts, no duplicate card in a normal pack, Club filters, formations/chemistry/199 cap, Draft curve/rewards, SBC duplicate laws, starter feasibility and asset-policy regressions.
-
-For card work, `scripts/smoke-v13.mjs` must confirm all seven materials and both canonical renderers.
+Validate runtime loading, dataset IDs, pack simulations/odds/item counts, no duplicate card in a normal pack, Club filters, formations/chemistry/199 cap, Draft curve/rewards, SBC duplicate laws, starter feasibility and asset-policy regressions. For card work, `scripts/smoke-v13.mjs` must confirm all seven materials and both canonical renderers.
 
 ### 2. Real browser smoke
 
-Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, photo/name/stats/id-row gaps, Club filters, Draft 11/11 field cards and desktop Companion layout.
-
-For card work, also run `scripts/browser-card-matrix-v13.mjs`; it must render all seven rarities in real Chromium. CI stores screenshots in `packverse-browser-smoke`.
+Minimum Chromium sizes: mobile `390×844`, desktop `1440×900`. Check runtime exceptions, overflow, card geometry, photo/name/stats/id-row gaps, Club filters, Draft 11/11 field cards and desktop Companion layout. For card work, also run `scripts/browser-card-matrix-v13.mjs` and render all seven rarities in real Chromium.
 
 ### 3. Human smoke
 
