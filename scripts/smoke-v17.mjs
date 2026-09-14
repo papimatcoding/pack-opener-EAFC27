@@ -12,10 +12,10 @@ assert(v15.includes('Number(PV.state.assetPolicyVersion||0)<15'),'V15 migration 
 assert(!v9.includes('assetMatchVersion!==9')&&!v10.includes('assetMatchVersion!==10'),'legacy match layer can wipe newer cached photos/logos');
 assert(!v11.includes('assetPolicyVersion!==11')&&!v12.includes('assetPolicyVersion!==12')&&!v14.includes('assetPolicyVersion!==14')&&!v15.includes('assetPolicyVersion!==15'),'older policy layer can wipe later-policy assets');
 assert(html.includes('<script src="v17/assets.js"></script>'),'V17 assets not loaded');
-assert(sw.includes("packverse27-v17-asset-persistence")&&sw.includes('./v17/assets.js'),'V17 PWA cache missing');
+const cacheVersion=Number(sw.match(/const CACHE='packverse27-v(\d+)-/)?.[1]||0);assert(cacheVersion>=17&&sw.includes('./v17/assets.js'),`V17 PWA guarantee missing under cache v${cacheVersion||'?'}`);
 assert(v17.includes('assetRecoveryV17')&&v17.includes('photoMissesV15={}'),'one-time false-negative recovery missing');
 assert(v17.includes('IntersectionObserver')&&v17.includes("rootMargin:'520px 0px'"),'viewport-lazy player hydration missing');
 assert(!v17.includes('oldHydrate?.(root)'),'V17 final hydrator must not call V16 eager hydrator');
 for(const [club,id] of [['Aston Villa',58],['Everton',62],['Brentford',402],['Brighton',397],['Crystal Palace',354],['West Ham',563],['Wolverhampton',76],['Leeds United',341],['Burnley',328]])assert(v17.includes(`'${club}':${id}`),`deterministic crest missing ${club}`);
 assert(v17.includes('safeCachedPhoto')&&v17.includes('photoMetaV16')&&v17.includes('photoMetaV15'),'safe cached-photo persistence check missing');
-console.log('PackVerse V0.17 static smoke OK · monotonic V9/V10 match + V11/V12/V14/V15 policy migrations · viewport-lazy photo lookup · deterministic PL crest expansion');
+console.log(`PackVerse V0.17 static smoke OK under PWA cache v${cacheVersion} · monotonic migrations · viewport-lazy photo lookup · deterministic PL crest expansion`);
