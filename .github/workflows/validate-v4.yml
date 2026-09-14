@@ -27,6 +27,8 @@ jobs:
         run: node scripts/smoke-v13.mjs
       - name: V0.14 player integrity + pool audit
         run: node scripts/smoke-v14.mjs
+      - name: V0.14 machine-readable asset coverage report
+        run: node scripts/report-assets-v14.mjs
       - name: Chromium smoke — mobile + desktop Companion + Draft field
         run: node scripts/browser-smoke-v12.mjs
       - name: Chromium card matrix — all seven rarities
