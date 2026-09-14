@@ -49,6 +49,24 @@ upsert('Roony Bardghji','ED',77,82,75,73,81,34,60,'Suecia','FC Barcelona','LaLig
 upsert('Jesse Bisiwu','ED',69,84,61,64,75,35,62,'Bélgica','FC Barcelona','LaLiga EA Sports',1800,['EI']);
 upsert('Hamza Abdelkarim','DC',68,74,68,58,69,28,67,'Egipto','FC Barcelona','LaLiga EA Sports',1500);
 
+// Real CE Sabadell 2026/27 first-team roster, intentionally useful for bronze/silver SBC depth.
+upsert('Diego Fuoli','POR',67,67,68,61,67,31,69,'España','CE Sabadell FC','LALIGA HYPERMOTION',1100);
+upsert('Nil Ruiz','POR',65,66,65,60,65,30,66,'España','CE Sabadell FC','LALIGA HYPERMOTION',800);
+upsert('Genar Fornés','LI',65,73,42,59,63,64,66,'España','CE Sabadell FC','LALIGA HYPERMOTION',850,['MI']);
+upsert('Carlos Garcia','DFC',64,59,33,53,55,64,69,'España','CE Sabadell FC','LALIGA HYPERMOTION',650);
+upsert('Arthur Bonaldo','DFC',66,63,35,54,57,66,72,'Brasil','CE Sabadell FC','LALIGA HYPERMOTION',950);
+upsert('Ton Ripoll','LI',64,75,45,58,66,61,60,'España','CE Sabadell FC','LALIGA HYPERMOTION',700,['MI']);
+upsert('David Astals','LD',63,74,44,57,63,60,59,'España','CE Sabadell FC','LALIGA HYPERMOTION',600,['MD']);
+upsert('Jan Molina','MCD',64,62,51,63,62,63,67,'España','CE Sabadell FC','LALIGA HYPERMOTION',700,['MC']);
+upsert('Jordi Ortega','MC',63,61,57,64,63,57,61,'España','CE Sabadell FC','LALIGA HYPERMOTION',600,['MCD']);
+upsert('Urri','MC',64,69,58,64,66,55,62,'España','CE Sabadell FC','LALIGA HYPERMOTION',700,['MCO']);
+upsert('Quadri Liameed','MCD',64,73,50,60,65,62,70,'Nigeria','CE Sabadell FC','LALIGA HYPERMOTION',750,['MC']);
+upsert('Rodrigo Escudero','DC',66,70,66,57,64,27,70,'España','CE Sabadell FC','LALIGA HYPERMOTION',950);
+upsert('Rubén Martínez','EI',65,78,61,60,68,34,58,'España','CE Sabadell FC','LALIGA HYPERMOTION',900,['MI']);
+upsert('Alan Godoy','DC',64,74,64,55,65,29,65,'España','CE Sabadell FC','LALIGA HYPERMOTION',750,['EI']);
+upsert('Javi López-Pinto','EI',63,76,58,59,66,31,56,'España','CE Sabadell FC','LALIGA HYPERMOTION',650,['MI']);
+upsert('Joel Priego','ED',64,78,60,58,67,33,57,'España','CE Sabadell FC','LALIGA HYPERMOTION',700,['MD']);
+
 // Extra real players to improve SBC/pack variety across rating bands.
 upsert('Mikel Oyarzabal','EI',84,76,84,82,83,52,72,'España','Real Sociedad','LaLiga EA Sports',19000,['DC']);
 upsert('Martín Zubimendi','MCD',84,65,70,84,80,84,78,'España','Arsenal','Premier League',24000,['MC']);
@@ -66,5 +84,5 @@ upsert('Archie Gray','MCD',76,75,60,75,76,74,73,'Inglaterra','Tottenham','Premie
 D.PLAYERS.forEach(p=>{if(!p.special)Object.assign(p,quality(p));});
 D.TOTW=D.PLAYERS.filter(p=>p.special);
 D.LEAGUES=[...new Set(D.PLAYERS.map(p=>p.league).filter(Boolean))].sort();
-window.PV14_DATA_AUDIT={version:14,total:D.PLAYERS.length,verifiedCurrentClub:D.PLAYERS.filter(p=>p.verifiedCurrentClub).length,tiers:Object.fromEntries(['bronze','silver','gold','special'].map(t=>[t,D.PLAYERS.filter(p=>p.tier===t).length])),clubCorrections:['Karim Adeyemi','João Cancelo','Rodri','Anthony Gordon','Gabriel Jesus','Ferran Torres','Marc Casadó','Héctor Fort']};
+window.PV14_DATA_AUDIT={version:14,total:D.PLAYERS.length,verifiedCurrentClub:D.PLAYERS.filter(p=>p.verifiedCurrentClub).length,tiers:Object.fromEntries(['bronze','silver','gold','special'].map(t=>[t,D.PLAYERS.filter(p=>p.tier===t).length])),clubCorrections:['Karim Adeyemi','João Cancelo','Rodri','Anthony Gordon','Gabriel Jesus','Ferran Torres','Marc Casadó','Héctor Fort'],verifiedSquads:['FC Barcelona 2026/27','CE Sabadell FC 2026/27']};
 })();
