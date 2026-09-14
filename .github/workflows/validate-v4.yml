@@ -1,6 +1,8 @@
-name: Validate PackVerse v0.11
+name: Validate PackVerse v0.12 Stabilization
 
 on:
+  push:
+    branches: ["dev"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -11,10 +13,24 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Syntax, verified assets, card proportions, Companion layout and gameplay checks
+      - name: Legacy regression checks
         run: node scripts/validate-v4.mjs
+      - name: AI smoke — packs, Club, XI, Draft Cup, SBC, assets and cards
+        run: node scripts/smoke-v12.mjs
+      - name: Chromium smoke — mobile + desktop Companion
+        run: node scripts/browser-smoke-v12.mjs
+      - name: Upload browser smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packverse-browser-smoke
+          path: .smoke-artifacts
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
